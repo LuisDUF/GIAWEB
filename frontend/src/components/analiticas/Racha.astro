@@ -1,0 +1,105 @@
+---
+
+
+const { titulo, mensaje, subtitulo } = Astro.props;
+
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Racha</title>
+</head>
+<!-- DENTRO DEL SLOT -->
+<body class="w-full flex flex-col justify-center items-center">
+    <div class="w-full flex flex-col justify-center items-center ">
+        <div id="rombo" class=" flex items-center justify-center rotate-45 w-24 h-24">
+            <div class="text-4xl font-extrabold text-primary text-center -rotate-45 select-none" id="current-streak">--</div>
+        </div>
+    </div>
+
+
+</body>
+</html>
+
+<script>
+    let esMax = false;
+    const rombo = document.getElementById("rombo");
+
+    async function fetchStreak(esMax) {
+    try {
+      // Ajusta la URL de tu API de Laravel y asegúrate de enviar el token de Bearer si usas Sanctum/Passport
+       const token = sessionStorage.getItem('auth_token');
+        if (!token) {
+        console.error('No hay token de autenticación. El usuario debe iniciar sesión.');
+        // Redirigir al login o mostrar mensaje
+        return;
+        }
+      const response = await fetch('http://127.0.0.1:8000/api/v1/workout-sessions/streak', {
+        method: 'GET',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+        }
+      });
+
+      if (!response.ok) throw new Error('No se pudo obtener la racha');
+
+      const data = await response.json();
+        // 1. Definimos todas las clases de color que podrían haberse agregado antes
+        const clasesDeColor = ["bg-[#975102]", "bg-[#8a9597]", "bg-[#FFD700]", "bg-[#d9d9d9]", "bg-blue"];
+
+        // 2. Limpiamos todas las clases de color existentes en el rombo (siempre que rombo exista)
+        rombo?.classList.remove(...clasesDeColor);
+
+        // Obtenemos el valor según corresponda (current o max)
+        const valorStreak = !esMax ? data.current_streak : data.max_streak;
+
+        // Actualizamos el texto en el DOM
+        document.getElementById('current-streak').textContent = valorStreak;
+
+        // 3. Evaluamos de MAYOR a MENOR para que los rangos funcionen correctamente
+        if (!esMax) {
+            if (valorStreak >= 100) {
+                rombo?.classList.add("bg-blue");
+            } else if (valorStreak >= 60) {
+                rombo?.classList.add("bg-[#d9d9d9]");
+            } else if (valorStreak >= 30) {
+                rombo?.classList.add("bg-[#FFD700]");
+            } else if (valorStreak >= 10) {
+                rombo?.classList.add("bg-[#8a9597]");
+            } else {
+                rombo?.classList.add("bg-[#975102]");
+            }
+        } else {
+            // Como la lógica para '!esMax' y 'esMax' es exactamente la misma 
+            // (solo cambia la variable), puedes unificarlo para no repetir código:
+            if (valorStreak >= 100) {
+                rombo?.classList.add("bg-blue");
+            } else if (valorStreak >= 60) {
+                rombo?.classList.add("bg-[#d9d9d9]");
+            } else if (valorStreak >= 30) {
+                rombo?.classList.add("bg-[#FFD700]");
+            } else if (valorStreak >= 10) {
+                rombo?.classList.add("bg-[#8a9597]");
+            } else {
+                rombo?.classList.add("bg-[#975102]");
+            }
+        }
+    } catch (error) {
+      console.error('Error fetching streak:', error);
+      document.getElementById('current-streak').textContent = '0';
+    }
+  }
+
+  fetchStreak(esMax);
+
+
+    window.addEventListener('cambiarRacha', ((e: CustomEvent) => {
+        esMax = e.detail.filtro;
+        fetchStreak(esMax);
+    }) as EventListener);
+</script>

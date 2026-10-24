@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+
+@theme {
+  --color-primary: #222831;
+  --color-secondary: #393E46;
+  --color-blue: #00ADB5;
+  --color-red: #B5001B;
+  --color-green: #00B576;
+}
+
+            .poetsen-one-regular {
+            font-family: "Poetsen One", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }

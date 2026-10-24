@@ -1,0 +1,107 @@
+---
+import '../../styles/global.css';
+---
+
+<div class="text-white w-full max-w-md p-8 py-0">
+    <!-- Contenedor de la Gráfica -->
+    <div id="chart-container" class="space-y-2 overflow-scroll scrollbar-none">
+        <p id="loading-text" class="text-slate-400 text-sm">Cargando sesiones...</p>
+    </div>
+    
+</div>
+
+<script>
+    let filtroActual = 'dia'; 
+
+    async function cargarEstadisticas(filtro: string) {
+        const token = sessionStorage.getItem('auth_token');
+        const container = document.getElementById('chart-container');
+        const loadingText = document.getElementById('loading-text');
+
+        if (container) {
+            container.innerHTML = `
+
+<div class="w-full h-[10rem] grid justify-center gap-2 text-center items-center mt-10">
+    <!-- La animación animate-pulse está ahora solo en el SVG -->
+    <svg class="mb-0 animate-ping duration-800 justify-self-center" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hourglass preview-icon"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>
+    
+    <!-- El texto se queda estático y claro -->
+    <h1 class="mt-0 animate-pulse duration-800 text-sm font-medium text-slate-200 poetsen-one-regular select-none">CARGANDO</h1>
+</div>
+
+            
+            `
+
+            
+            
+        }
+
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/v1/workout-sessions/stats?filtro=${filtro}`, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+
+            // 🔍 AQUÍ LEEMOS EL ERROR REAL DE LARAVEL SI FALLA
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Detalle del error de Laravel en stats:", errorData);
+                throw new Error(`Error ${response.status}: ${errorData.message || response.statusText}`);
+            }
+
+            const datosEntreno = await response.json();
+            
+            const currentContainer = document.getElementById('chart-container');
+            if (currentContainer) currentContainer.innerHTML = '';
+
+            let ordenEtiquetas: string[] = [];
+            if (filtro === 'dia') {
+                ordenEtiquetas = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+            } else if (filtro === 'semana') {
+                ordenEtiquetas = ["Semana 1", "Semana 2", "Semana 3", "Semana 4"];
+            } else if (filtro === 'mes') {
+                ordenEtiquetas = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+            } else if (filtro === 'anio') {
+                ordenEtiquetas = ["2024", "2025", "2026"];
+            }
+
+            const valores = Object.values(datosEntreno);
+            const maxValor = valores.length > 0 ? Math.max(...(valores as number[])) : 0;
+
+            ordenEtiquetas.forEach(etiqueta => {
+                if (datosEntreno[etiqueta] !== undefined) {
+                    const valor = datosEntreno[etiqueta];
+                    const porcentaje = maxValor > 0 ? (valor / maxValor) * 100 : 0;
+
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = "flex flex-col space-y-1";
+
+                    itemDiv.innerHTML = `
+                        <span class="text-sm font-medium text-slate-200 poetsen-one-regular select-none">${etiqueta}</span>
+                        <div class="w-full bg-slate-300 rounded-md overflow-hidden h-6 relative flex items-center">
+                            <div class="bg-blue h-full rounded-md transition-all duration-500 flex items-center select-none px-2" style="width: ${porcentaje}%">
+                            </div>
+                            <span class="select-none absolute left-2 text-xs font-bold ${porcentaje > 10 ? 'text-white' : 'text-slate-800'}">${valor}</span>
+                        </div>
+                    `;
+
+                    currentContainer?.appendChild(itemDiv);
+                }
+            });
+
+        } catch (error) {
+            console.error('Error al cargar las estadísticas:', error);
+        }
+    }
+
+    cargarEstadisticas(filtroActual);
+
+    window.addEventListener('cambiarFiltroEstadisticas', ((e: CustomEvent) => {
+        filtroActual = e.detail.filtro;
+        cargarEstadisticas(filtroActual);
+    }) as EventListener);
+</script>

@@ -1,0 +1,43 @@
+---
+import BaseLayout from './BaseLayout.astro';
+---
+
+<BaseLayout>
+    <div id="protected-content" hidden>
+        <slot />
+    </div>
+</BaseLayout>
+
+<script>
+    const protectedContent = document.getElementById('protected-content');
+    const authStatus = document.getElementById('auth-status');
+    const token = sessionStorage.getItem('auth_token');
+    const apiUrl = (import.meta.env.PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+
+    if (!token) {
+        window.location.replace('/');
+    } else {
+        try {
+            const response = await fetch(`${apiUrl}/user`, {
+                headers: {
+                    Accept: 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                sessionStorage.removeItem('auth_token');
+                window.location.replace('/');
+            } else if (!response.ok) {
+                throw new Error(`No se pudo comprobar la sesión (HTTP ${response.status}).`);
+            } else {
+                protectedContent.hidden = false;
+                authStatus.hidden = true;
+            }
+        } catch (error) {
+            authStatus.textContent = error instanceof Error
+                ? error.message
+                : 'No se pudo comprobar la sesión. Intenta de nuevo.';
+        }
+    }
+</script>

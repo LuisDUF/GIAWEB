@@ -1,0 +1,98 @@
+---
+import ProtectedLayout from "../layouts/ProtectedLayout.astro";
+import Card from "../components/Card.astro";
+import Sesiones from "../components/analiticas/Sesiones.astro";
+import Racha from "../components/analiticas/Racha.astro";
+---
+
+<ProtectedLayout>
+    <div class="grid grid-cols-2 items-center justify-center gap-4 md:gap-0 md:mt-10 mt-16 p-4">
+    
+        <div class="flex flex-col gap-4 md:gap-10 items-center justify-center hover:cursor-pointer group hover:-translate-y-4 hover:drop-shadow-xl hover:drop-shadow-black duration-500">
+            <div class="bg-blue rounded-full shadow-md shadow-black p-4 md:p-8 items-center flex justify-center md:w-50 w-25">
+                <h1 class="text-xl font-bold text-center hidden group-hover:block text-secondary poetsen-one-regular select-none">Nuevo Registro</h1>
+                <svg class="group-hover:hidden" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#393E46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus preview-icon"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-4 md:gap-10 items-center justify-center hover:cursor-pointer group hover:-translate-y-4 hover:drop-shadow-2xl hover:drop-shadow-black duration-500">
+            <div class="bg-blue rounded-full shadow-md shadow-black p-4 md:p-8 items-center flex justify-center md:w-50 w-25">
+                <svg class="group-hover:hidden" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#393E46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table-of-contents preview-icon"><path d="M16 5H3"/><path d="M16 12H3"/><path d="M16 19H3"/><path d="M21 5h.01"/><path d="M21 12h.01"/><path d="M21 19h.01"/></svg>     
+                <h1 class="text-xl font-bold text-center hidden group-hover:block text-secondary poetsen-one-regular select-none">Consultar Registros</h1>
+            </div>
+        </div>
+
+        <Card 
+            titulo="Sesiones de entreno" 
+            subtitulo="<p id='btn-cambiar' class='cursor-pointer underline'>Por día</p>" 
+        >
+            <Sesiones />
+        </Card>
+
+        <Card 
+            titulo="Días de racha" 
+            subtitulo="<p id='btn-racha' class='cursor-pointer underline'>Ver máxima racha</p>" 
+        >
+            <Racha />
+        </Card>
+
+    </div>
+    
+
+<script>
+        let estadoFiltro = 1; // 1: día, 2: semana, 3: mes, 4: año
+        const btnCambiar = document.getElementById('btn-cambiar');
+        
+        btnCambiar?.addEventListener('click', () => {
+            let filtroEnviar = 'dia';
+
+            switch(estadoFiltro) {
+                case 1:
+                    btnCambiar.innerText = "Por semana";
+                    filtroEnviar = 'semana';
+                    estadoFiltro++;
+                    break;
+                case 2:
+                    btnCambiar.innerText = "Por mes";
+                    filtroEnviar = 'mes';
+                    estadoFiltro++;
+                    break;
+                case 3:
+                    btnCambiar.innerText = "Por año";
+                    filtroEnviar = 'anio';
+                    estadoFiltro++;
+                    break;
+                case 4:
+                    btnCambiar.innerText = "Por día";
+                    filtroEnviar = 'dia';
+                    estadoFiltro = 1;
+                    break;
+            }
+
+            // Disparamos un evento personalizado para que la gráfica se actualice sola
+            const evento = new CustomEvent('cambiarFiltroEstadisticas', {
+                detail: { filtro: filtroEnviar }
+            });
+            window.dispatchEvent(evento);
+        });
+
+
+        const btnRacha = document.getElementById('btn-racha');
+        let esMax = false;
+        btnRacha?.addEventListener('click',()=>{
+            if(esMax){
+                btnRacha.innerText = "Ver máxima racha";
+                
+            }else{
+                btnRacha.innerText = "Ver racha actual";
+                
+            }
+            esMax = !esMax;
+
+            const evento = new CustomEvent('cambiarRacha', {
+            detail: { filtro: esMax }
+            });
+            window.dispatchEvent(evento);
+        });
+    </script>
+</ProtectedLayout>
