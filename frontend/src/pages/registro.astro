@@ -1,0 +1,49 @@
+---
+import ProtectedLayout from "../layouts/ProtectedLayout.astro";
+---
+
+<ProtectedLayout>
+
+
+
+<script>
+    const apiUrl = (import.meta.env.PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api')
+        .replace(/\/$/, '');
+
+    async function cargarRegistro() {
+        const id = new URLSearchParams(window.location.search).get('id');
+        const token = sessionStorage.getItem('auth_token');
+
+        if (!id || !/^\d+$/.test(id)) {
+            console.error('No se recibió un ID válido en la URL.');
+            return;
+        }
+
+        if (!token) {
+            console.error('No se encontró la sesión. Inicia sesión nuevamente.');
+            return;
+        }
+
+        const response = await fetch(
+            `${apiUrl}/v1/workout-sessions/${encodeURIComponent(id)}`,
+            {
+                headers: {
+                    Accept: 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`No se pudo obtener el registro (HTTP ${response.status}).`);
+        }
+
+        const registro = await response.json();
+        console.log(registro); // Aquí puedes mostrar sus datos en la página.
+    }
+
+    void cargarRegistro().catch((error) => {
+        console.error('Error al cargar el registro:', error);
+    });
+</script>
+</ProtectedLayout>

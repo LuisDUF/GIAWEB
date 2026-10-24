@@ -221,6 +221,11 @@ async function obtenerRegistros(pagina = paginaRegistros) {
             registros.forEach((registro) => {
                 const elemento = document.createElement('div');
                 elemento.className = 'mb-3 rounded-md bg-primary p-4 text-white shadow-sm hover:shadow-md hover:shadow-blue hover:cursor-pointer duration-200 transition ease-in-out hover:-translate-y-2 shadow-white grid grid-cols-3';
+                
+elemento.addEventListener('click', () => {
+    window.location.href = `/registro?id=${encodeURIComponent(registro.id)}`;
+});
+
 
                 const fecha = registro.date.slice(0, 10).split('-').reverse().join('/');
                 const titulo = document.createElement('h2');

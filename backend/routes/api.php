@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\V1\WorkoutSessionController;
+use App\Http\Controllers\Api\SessionExerciseController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -14,8 +15,13 @@ use App\Http\Controllers\API\V1\WorkoutSessionController;
 |
 */
 
+
+
+
 Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // Si ya tienes un resource o rutas agrupadas, asegúrate de que quede accesible en /api/v1/workout-sessions/stats
+Route::apiResource('session-exercises', SessionExerciseController::class);
+
     Route::get('/workout-sessions/streak', [\App\Http\Controllers\API\V1\WorkoutSessionController::class, 'streak']);
     Route::get('/workout-sessions/stats', [\App\Http\Controllers\API\V1\WorkoutSessionController::class, 'stats']);
     Route::get('/workout-sessions/{id}/routine', [WorkoutSessionController::class, 'routine']);

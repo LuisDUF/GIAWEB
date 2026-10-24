@@ -53,6 +53,6 @@ class SessionExercise extends Model
 
     public function sessionSets(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(\App\Models\SessionSet::class, 'session_exercise_id');
+        return $this->hasMany(\App\Models\SessionSets::class, 'session_exercise_id');
     }
 }

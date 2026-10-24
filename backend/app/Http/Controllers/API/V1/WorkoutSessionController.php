@@ -126,8 +126,13 @@ public function index(Request $request)
     public function show(Request $request, string $id)
     {
         $session = $this->profileFor($request)
-            ->workoutSessions()
-            ->findOrFail($id);
+    ->workoutSessions()
+    ->with([
+        'routineDay.routine',
+        'sessionExercises.exercise',
+        'sessionExercises.sessionSets',
+    ])
+    ->findOrFail($id);
 
         return response()->json($session);
     }
