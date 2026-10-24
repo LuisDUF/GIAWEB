@@ -6,17 +6,17 @@ import Racha from "../components/analiticas/Racha.astro";
 ---
 
 <ProtectedLayout>
-    <div class="grid grid-cols-2 items-center justify-center gap-4 md:gap-0 md:mt-10 mt-16 p-4">
+    <div class="noConsultar transition ease-in-out duration-500 grid grid-cols-2 items-center justify-center gap-4 md:gap-0 md:mt-10 mt-16 p-4">
     
-        <div class="flex flex-col gap-4 md:gap-10 items-center justify-center hover:cursor-pointer group hover:-translate-y-4 hover:drop-shadow-xl hover:drop-shadow-black duration-500">
+        <div class=" transition ease-in-out flex flex-col gap-4 md:gap-10 items-center justify-center hover:cursor-pointer group hover:-translate-y-4 hover:drop-shadow-xl hover:drop-shadow-black duration-500">
             <div class="bg-blue rounded-full shadow-md shadow-black p-4 md:p-8 items-center flex justify-center md:w-50 w-25">
                 <h1 class="text-xl font-bold text-center hidden group-hover:block text-secondary poetsen-one-regular select-none">Nuevo Registro</h1>
                 <svg class="group-hover:hidden" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#393E46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus preview-icon"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
             </div>
         </div>
 
-        <div class="flex flex-col gap-4 md:gap-10 items-center justify-center hover:cursor-pointer group hover:-translate-y-4 hover:drop-shadow-2xl hover:drop-shadow-black duration-500">
-            <div class="bg-blue rounded-full shadow-md shadow-black p-4 md:p-8 items-center flex justify-center md:w-50 w-25">
+        <div class=" flex flex-col gap-4 md:gap-10 items-center justify-center hover:cursor-pointer group hover:-translate-y-4 hover:drop-shadow-2xl hover:drop-shadow-black duration-500 transition ease-in-out">
+            <div id="btn-consultar-r" class="bg-blue rounded-full shadow-md shadow-black p-4 md:p-8 items-center flex justify-center md:w-50 w-25">
                 <svg class="group-hover:hidden" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#393E46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table-of-contents preview-icon"><path d="M16 5H3"/><path d="M16 12H3"/><path d="M16 19H3"/><path d="M21 5h.01"/><path d="M21 12h.01"/><path d="M21 19h.01"/></svg>     
                 <h1 class="text-xl font-bold text-center hidden group-hover:block text-secondary poetsen-one-regular select-none">Consultar Registros</h1>
             </div>
@@ -25,6 +25,7 @@ import Racha from "../components/analiticas/Racha.astro";
         <Card 
             titulo="Sesiones de entreno" 
             subtitulo="<p id='btn-cambiar' class='cursor-pointer underline'>Por día</p>" 
+            class="transition ease-in-out"
         >
             <Sesiones />
         </Card>
@@ -32,12 +33,45 @@ import Racha from "../components/analiticas/Racha.astro";
         <Card 
             titulo="Días de racha" 
             subtitulo="<p id='btn-racha' class='cursor-pointer underline'>Ver máxima racha</p>" 
+            class="transition ease-in-out"
         >
             <Racha />
         </Card>
 
     </div>
     
+    <div id="Consultar" class=" hidden opacity-0 duration-500 transition ease-in-out w-full p-10 justify-center">
+        <div  class="bg-secondary  w-full md:mt-10 mt-16 p-10 rounded-2xl shadow-lg shadow-black">
+
+            <div class="grid grid-cols-3 w-full gap-2 justify-center">
+                <div id="exitConsultar" >
+                    <svg class=" rounded-full hover:shadow-xl hover:shadow-black hover:cursor-pointer transition duration-200 ease-in-out  hover:-translate-y-1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon"><path d="m15 18-6-6 6-6"/></svg>
+                </div>
+                <form id="filtro-fecha" class="mb-4 flex flex-wrap items-end gap-3">
+                    <label class="flex flex-col gap-1 text-sm text-white">
+                        Buscar por fecha
+                        <input id="fecha-registros" name="date" type="date" class="rounded-md bg-white px-3 py-2 text-slate-900" />
+                    </label>
+                    <button type="submit" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary">Buscar</button>
+                    <button id="limpiar-fecha" type="button" class="rounded-md border border-white px-4 py-2 text-white">Limpiar</button>
+                </form>
+
+            </div>
+
+
+            <p id="estado-registros" class="mb-3 text-sm text-white" role="status" aria-live="polite"></p>
+            <ol id="lista">
+            </ol>
+            <div class="mt-4 flex items-center justify-between gap-3 text-white">
+                <button id="pagina-anterior" type="button" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary disabled:cursor-not-allowed disabled:opacity-50">Anterior</button>
+                <span id="pagina-actual" aria-live="polite"></span>
+                <button id="pagina-siguiente" type="button" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary disabled:cursor-not-allowed disabled:opacity-50">Siguiente</button>
+            </div>
+        </div>
+    </div>
+
+
+
 
 <script>
         let estadoFiltro = 1; // 1: día, 2: semana, 3: mes, 4: año
@@ -93,6 +127,164 @@ import Racha from "../components/analiticas/Racha.astro";
             detail: { filtro: esMax }
             });
             window.dispatchEvent(evento);
+        });
+
+        interface RegistroEntrenamiento {
+            id: number;
+            date: string;
+            duration_minutes: number | null;
+            notes: string | null;
+        }
+
+        interface PaginaRegistros {
+            data: RegistroEntrenamiento[];
+            current_page: number;
+            last_page: number;
+            total: number;
+        }
+
+        let paginaRegistros = 1;
+        let ultimaPaginaRegistros = 1;
+        let cargandoRegistros = false;
+
+        async function obtenerRegistros(pagina = paginaRegistros) {
+            if (cargandoRegistros) return;
+
+            const token = sessionStorage.getItem('auth_token');
+            const lista = document.getElementById('lista');
+            const estado = document.getElementById('estado-registros');
+            const paginaActual = document.getElementById('pagina-actual');
+            const botonAnterior = document.getElementById('pagina-anterior') as HTMLButtonElement | null;
+            const botonSiguiente = document.getElementById('pagina-siguiente') as HTMLButtonElement | null;
+            const fecha = (document.getElementById('fecha-registros') as HTMLInputElement | null)?.value;
+
+            if (!token) {
+                if (estado) estado.textContent = 'No se encontró la sesión. Inicia sesión nuevamente.';
+                return;
+            }
+
+            const apiUrl = (import.meta.env.PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+            const parametros = new URLSearchParams({ page: String(pagina) });
+            if (fecha) parametros.set('date', fecha);
+
+            cargandoRegistros = true;
+            if (estado) estado.textContent = 'Cargando registros...';
+            if (botonAnterior) botonAnterior.disabled = true;
+            if (botonSiguiente) botonSiguiente.disabled = true;
+
+            try {
+                const response = await fetch(`${apiUrl}/v1/workout-sessions?${parametros}`, {
+                    headers: {
+                        Accept: 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
+                    throw new Error(errorData?.message ?? `No se pudieron obtener los registros (HTTP ${response.status}).`);
+                }
+
+                const resultado = await response.json() as PaginaRegistros;
+                paginaRegistros = resultado.current_page;
+                ultimaPaginaRegistros = resultado.last_page;
+                colocarRegistros(resultado.data);
+
+                if (estado) {
+                    estado.textContent = resultado.total === 0
+                        ? 'No se encontraron registros para esta fecha.'
+                        : `${resultado.total} registro${resultado.total === 1 ? '' : 's'} encontrado${resultado.total === 1 ? '' : 's'}.`;
+                }
+                if (paginaActual) paginaActual.textContent = `Página ${paginaRegistros} de ${ultimaPaginaRegistros}`;
+            } catch (error) {
+                console.error('Error al obtener los registros:', error);
+                if (lista) lista.replaceChildren();
+                if (estado) estado.textContent = error instanceof Error ? error.message : 'Ocurrió un error al cargar los registros.';
+                if (paginaActual) paginaActual.textContent = '';
+            } finally {
+                cargandoRegistros = false;
+                if (botonAnterior) botonAnterior.disabled = paginaRegistros <= 1;
+                if (botonSiguiente) botonSiguiente.disabled = paginaRegistros >= ultimaPaginaRegistros;
+            }
+        }
+
+        function colocarRegistros(registros: RegistroEntrenamiento[]) {
+            const lista = document.getElementById('lista');
+            if (!lista) return;
+
+            lista.replaceChildren();
+            registros.forEach((registro) => {
+                const elemento = document.createElement('li');
+                elemento.className = 'mb-3 rounded-md bg-white p-4 text-slate-900';
+
+                const fecha = registro.date.slice(0, 10).split('-').reverse().join('/');
+                const titulo = document.createElement('h2');
+                titulo.className = 'font-semibold';
+                titulo.textContent = `Entrenamiento del ${fecha}`;
+                elemento.appendChild(titulo);
+
+                if (registro.duration_minutes !== null) {
+                    const duracion = document.createElement('p');
+                    duracion.textContent = `Duración: ${registro.duration_minutes} minutos`;
+                    elemento.appendChild(duracion);
+                }
+
+                if (registro.notes) {
+                    const notas = document.createElement('p');
+                    notas.textContent = registro.notes;
+                    elemento.appendChild(notas);
+                }
+
+                lista.appendChild(elemento);
+            });
+        }
+
+        document.getElementById('filtro-fecha')?.addEventListener('submit', (event) => {
+            event.preventDefault();
+            paginaRegistros = 1;
+            void obtenerRegistros(1);
+        });
+
+        document.getElementById('limpiar-fecha')?.addEventListener('click', () => {
+            const campoFecha = document.getElementById('fecha-registros') as HTMLInputElement | null;
+            if (campoFecha) campoFecha.value = '';
+            paginaRegistros = 1;
+            void obtenerRegistros(1);
+        });
+
+        document.getElementById('pagina-anterior')?.addEventListener('click', () => {
+            if (paginaRegistros > 1) void obtenerRegistros(paginaRegistros - 1);
+        });
+
+        document.getElementById('pagina-siguiente')?.addEventListener('click', () => {
+            if (paginaRegistros < ultimaPaginaRegistros) void obtenerRegistros(paginaRegistros + 1);
+        });
+
+        const btnConsular = document.getElementById("btn-consultar-r");
+        btnConsular?.addEventListener('click', () => {
+            const elementos = document.querySelectorAll('.noConsultar');
+            elementos.forEach((elemento) => {
+                elemento.classList.add('opacity-0');
+                setTimeout(() => elemento.classList.add('hidden'), 500);
+            });
+
+            const consulta = document.getElementById('Consultar');
+            consulta?.classList.remove('hidden');
+            setTimeout(() => consulta?.classList.remove('opacity-0'), 500);
+            void obtenerRegistros(1);
+
+            const exitConsulta = document.getElementById("exitConsultar");
+            exitConsulta?.addEventListener("click", ()=>{
+                consulta?.classList.add('opacity-0')
+                setTimeout(() => consulta?.classList.add("hidden"), 500);
+                
+
+                const elementos = document.querySelectorAll('.noConsultar');
+                elementos.forEach((elemento) => {
+                    elemento.classList.add('opacity-100');
+                    setTimeout(() => elemento.classList.remove('hidden'), 500);
+                });
+            });
         });
     </script>
 </ProtectedLayout>

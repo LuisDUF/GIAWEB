@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 
-const { titulo, mensaje, subtitulo } = Astro.props;
+const { titulo, class: className = '', subtitulo } = Astro.props;
 
 ---
 
@@ -19,7 +19,7 @@ const { titulo, mensaje, subtitulo } = Astro.props;
 </head>
 <body>
 
-    <div id="interactive-area" class="relative w-full h-screen ">
+    <div id="interactive-area" class={`relative w-full h-screen  card-base ${className}`}>
 
         <div class="absolute z-9 w-full flex justify-center items-center md:mt-[22rem] mt-[23rem]">
             <div id="create-account-card" class="duration-500 transition-all ease-in-out opacity-100 translate-y-0 tilt-element hover:cursor-pointer bg-blue md:rounded-3xl rounded p-16 pb-3 px-10 md:min-w-[25rem] max-w-[25rem] flex flex-col gap-4 shadow-md justify-center items-center md:mt-[8rem] mt-[5rem]">

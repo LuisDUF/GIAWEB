@@ -89,10 +89,18 @@ public function streak(Request $request)
 
 public function index(Request $request)
     {
+        $validated = $request->validate([
+            'date' => ['nullable', 'date'],
+        ]);
+
         $sessions = $this->profileFor($request)
             ->workoutSessions()
+            ->when(
+                $validated['date'] ?? null,
+                fn ($query, $date) => $query->whereDate('date', $date)
+            )
             ->latest('date')
-            ->paginate(10);
+            ->paginate(5);
 
         return response()->json($sessions);
     }
