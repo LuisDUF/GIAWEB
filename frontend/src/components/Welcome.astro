@@ -208,6 +208,11 @@ import '../styles/global.css';
             }
 
             sessionStorage.setItem('auth_token', data.success);
+            if (endpoint === 'login' && data.user?.is_admin === false) {
+                window.location.replace('/dashboard');
+                return;
+            }
+
             authMessage.textContent = successMessage;
             form.reset();
         } catch (error) {
