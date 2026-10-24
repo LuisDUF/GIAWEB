@@ -88,22 +88,23 @@ public function streak(Request $request)
 }
 
 public function index(Request $request)
-    {
-        $validated = $request->validate([
-            'date' => ['nullable', 'date'],
-        ]);
+{
+    $validated = $request->validate([
+        'date' => ['nullable', 'date'],
+    ]);
 
-        $sessions = $this->profileFor($request)
-            ->workoutSessions()
-            ->when(
-                $validated['date'] ?? null,
-                fn ($query, $date) => $query->whereDate('date', $date)
-            )
-            ->latest('date')
-            ->paginate(5);
+    $sessions = $this->profileFor($request)
+        ->workoutSessions()
+        ->with(['routineDay.routine']) // <-- Añadimos esto para cargar la relación anidada
+        ->when(
+            $validated['date'] ?? null,
+            fn ($query, $date) => $query->whereDate('date', $date)
+        )
+        ->latest('date')
+        ->paginate(12);
 
-        return response()->json($sessions);
-    }
+    return response()->json($sessions);
+}
 
     public function store(Request $request)
     {
@@ -208,5 +209,43 @@ public function stats(Request $request)
     }
 
     return response()->json($conteo);
+}
+
+
+/**
+     * Obtener la información de la rutina y sus días asociados a partir de una sesión de entrenamiento.
+     */
+public function routine(Request $request, string $id)
+{
+    $session = $this->profileFor($request)
+        ->workoutSessions()
+        ->with(['routineDay.routine'])
+        ->findOrFail($id);
+
+    // Si no tiene rutina, devolvemos null con código 200 en lugar de abortar con 404
+    if (!$session->routineDay || !$session->routineDay->routine) {
+        return response()->json(null, 200);
+    }
+
+    return response()->json($session->routineDay->routine);
+}
+
+public function routine_day(Request $request, string $id)
+{
+    $session = $this->profileFor($request)
+        ->workoutSessions()
+        ->with(['routineDay.routine'])
+        ->findOrFail($id);
+
+    // Si no tiene día de rutina asociado, retornamos null
+    if (!$session->routineDay) {
+        return response()->json(null, 200);
+    }
+
+    // Retornamos un array estructurado con ambos datos
+    return response()->json([
+        'routine_day' => $session->routineDay,
+        'routine'     => $session->routineDay->routine,
+    ], 200);
 }
 }
