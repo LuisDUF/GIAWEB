@@ -1,0 +1,45 @@
+---
+import '../styles/global.css';
+
+const { titulo, class: className = '', subtitulo } = Astro.props;
+
+---
+
+
+<div class="w-full grid grid-cols-1 gap-4 p-10 py-4 overflow-y-auto scrollbar-thin scrollbar-thumb-blue">
+
+    <div id="series" class="grid grid-cols-4 gap-4 select-none">
+        <div class="col-span-1 text-white text-4xl poetsen-one-regular text-center flex justify-start items-center">I.</div>
+        <div class="col-span-3">
+            <div class="bg-primary p-4 rounded-4xl shadow-black shadow-md hover:cursor-pointer hover:shadow-white hover:-translate-y-2 transition duration-300">
+                <div class="grid grid-cols-3 w-full">
+                    <div class="text-white justify-center text-center poetsen-one-regular border-r-2 border-white">
+                        <input type="number"   placeholder="8" class="text-5xl w-full text-center outline-none">
+                        <h1 class="text-white text-lg">Reps</h1>
+                    </div>
+                    <div class="text-white justify-center text-center poetsen-one-regular border-r-2 border-white">
+                        <input type="number"  placeholder="12" class="text-5xl w-full text-center outline-none">
+                        <h1 class="text-white text-lg">Peso</h1>
+                    </div>
+                    <div class="text-white justify-center text-center poetsen-one-regular  border-white">
+                        <h1 class="text-white text-7xl">KG</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div id="series" class="grid grid-cols-4 gap-4">
+        <div class="col-span-1"></div>
+        <div class="col-span-1">
+            <div class="bg-primary p-10 hover:cursor-pointer px-0 rounded-4xl flex justify-center items-center w-30 shadow-black shadow-md hover:shadow-white hover:-translate-y-2 transition duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus preview-icon w-6 h-6"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+</script>

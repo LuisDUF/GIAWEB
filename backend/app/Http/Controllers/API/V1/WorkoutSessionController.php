@@ -129,6 +129,8 @@ public function index(Request $request)
     ->workoutSessions()
     ->with([
         'routineDay.routine',
+        'routineDay.routineDayExercises' => fn ($query) => $query->orderBy('order_index'),
+        'routineDay.routineDayExercises.exercise',
         'sessionExercises.exercise',
         'sessionExercises.sessionSets',
     ])

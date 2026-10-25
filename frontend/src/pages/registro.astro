@@ -2,6 +2,7 @@
 import Racha from "../components/analiticas/Racha.astro";
 import Card from "../components/Card.astro";
 import Ejercicio from "../components/Ejercicio.astro";
+import Registro from "../components/Registro.astro";
 import ProtectedLayout from "../layouts/ProtectedLayout.astro";
 ---
 
@@ -9,11 +10,7 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
 
     <div class="w-full px-10 ">
         <div class="bg-secondary rounded-3xl overflow-x-auto  scrollbar-thumb-blue shadow-inner shadow-black ">
-            <div id="tabla-ejercicios" class=" p-10  gap-6 rounded-3xl  grid grid-flow-col grid-rows-1 w-max">
-                <div class="text-center p-4 bg-blue text-white text-lg rounded shadow-md shadow-black  poetsen-one-regular hover:cursor-pointer hover:shadow-blue hover:text-shadow-lg  hover:-translate-y-2 transition duration-800 ease-in-out">
-                    HOLA
-                </div>
-            </div>
+            <div id="tabla-ejercicios" class="p-10 py-4 gap-6 rounded-3xl grid grid-flow-col grid-rows-1 w-max"></div>
         </div>
     </div>
 
@@ -23,7 +20,7 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
             <div class="grid grid-cols-1 items-center justify-center">
                 <Card
                     titulo="Ejercicio"
-                    subtitulo = ""
+                    subtitulo = "<div class='mt-6'></div>"
                     class=""
                     classContenido="md:min-w-[30rem] max-w-[20rem] "
                 >
@@ -39,14 +36,38 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
             <div class="grid grid-cols-1 items-center justify-center">
                 <Card
                     titulo="Ejercicio"
-                    subtitulo = ""
+                    subtitulo = "<div class='mt-6'></div>"
                     class=""
                     classContenido="w-[80%] "
                 >
-                    <Ejercicio/>
+                    <Registro/>
                 </Card>
             </div>
 
+        </div>
+
+
+
+    </div>
+
+    <div class="w-full flex justify-center select-none">
+        <div class="min-w-96 grid grid-cols-2 mt-20 gap-4 justify-center items-center text-center">
+
+            <!--
+            
+            
+
+            <div class="bg-[#FF8D28] p-4 text-center text-white text-2xl rounded shadow-md shadow-black poetsen-one-regular hover:cursor-pointer hover:shadow-[#FF8D28] hover:text-shadow-lg hover:-translate-y-2 transition duration-800 ease-in-out ">
+                Cambiar
+            </div>
+
+            -->
+           <div class="bg-red p-4 text-center text-white text-2xl rounded shadow-md shadow-black poetsen-one-regular hover:cursor-pointer hover:shadow-red hover:text-shadow-lg hover:-translate-y-2 transition duration-800 ease-in-out ">
+                Saltar
+            </div>
+            <div class="bg-blue p-4 text-center text-white text-2xl rounded shadow-md shadow-black poetsen-one-regular hover:cursor-pointer hover:shadow-blue hover:text-shadow-lg hover:-translate-y-2 transition duration-800 ease-in-out ">
+                Siguiente
+            </div>
         </div>
     </div>
     
@@ -59,6 +80,43 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
 <script>
     const apiUrl = (import.meta.env.PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api')
         .replace(/\/$/, '');
+
+    type EjercicioRutina = {
+        exercise?: {
+            name?: string | null;
+        } | null;
+    };
+
+    type RegistroEntrenamiento = {
+        routine_day?: {
+            routine_day_exercises?: EjercicioRutina[] | null;
+        } | null;
+    };
+
+    function mostrarEjercicios(ejercicios: EjercicioRutina[]) {
+        const tabla = document.getElementById('tabla-ejercicios');
+        if (!tabla) {
+            throw new Error('No se encontró la tabla de ejercicios.');
+        }
+
+        tabla.replaceChildren();
+
+        if (ejercicios.length === 0) {
+            const mensaje = document.createElement('p');
+            mensaje.className = 'text-white';
+            mensaje.textContent = 'Esta sesión no tiene ejercicios de rutina.';
+            tabla.appendChild(mensaje);
+            return;
+        }
+
+        for (const ejercicioRutina of ejercicios) {
+            const boton = document.createElement('button');
+            boton.type = 'button';
+            boton.className = 'text-center p-4 bg-blue text-white text-lg rounded shadow-md shadow-black poetsen-one-regular hover:cursor-pointer hover:shadow-blue hover:text-shadow-lg hover:-translate-y-2 transition duration-800 ease-in-out';
+            boton.textContent = ejercicioRutina.exercise?.name ?? 'Ejercicio';
+            tabla.appendChild(boton);
+        }
+    }
 
     async function cargarRegistro() {
         const id = new URLSearchParams(window.location.search).get('id');
@@ -88,8 +146,9 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
             throw new Error(`No se pudo obtener el registro (HTTP ${response.status}).`);
         }
 
-        const registro = await response.json();
-        console.log(registro); // Aquí puedes mostrar sus datos en la página.
+        const registro: RegistroEntrenamiento = await response.json();
+        const ejercicios = registro.routine_day?.routine_day_exercises ?? [];
+        mostrarEjercicios(ejercicios);
     }
 
     void cargarRegistro().catch((error) => {
