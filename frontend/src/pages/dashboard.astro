@@ -28,7 +28,8 @@ import Racha from "../components/analiticas/Racha.astro";
                     titulo="Sesiones de entreno" 
                     subtitulo="<p id='btn-cambiar' class='cursor-pointer underline'>Por día</p>" 
                     class="transition ease-in-out col-span-2 md:col-span-1"
-                    classContenido = "md:min-w-[30rem] max-w-[20rem] "
+                    classContenido = "md:min-w-[30rem] max-w-[20rem] justify-center"
+                    
                 >
                     <Sesiones />
                 </Card>
@@ -37,7 +38,8 @@ import Racha from "../components/analiticas/Racha.astro";
                     titulo="Días de racha" 
                     subtitulo="<p id='btn-racha' class='cursor-pointer underline'>Ver máxima racha</p>" 
                     class="transition ease-in-out col-span-2 md:col-span-1"
-                    classContenido="md:min-w-[30rem] max-w-[20rem] "
+                    classContenido="md:min-w-[30rem] max-w-[20rem] justify-center"
+                    
                 >
                     <Racha />
                 </Card>
@@ -266,15 +268,15 @@ elemento.addEventListener('click', () => {
 
                 if (registro.duration_minutes !== null && registro.duration_minutes !== undefined) {
                     const duracion = document.createElement('p');
-                    duracion.className = 'text-sm text-slate-600 select-none';
+                    duracion.className = 'text-sm text-slate-600 select-none  border-r-2';
                     duracion.textContent = `Duración: ${registro.duration_minutes} minutos`;
                     elemento.appendChild(duracion);
                 }
 
                 if (registro.notes) {
                     const notas = document.createElement('p');
-                    notas.className = 'text-sm text-slate-700 mt-2 bg-slate-50 p-2 rounded';
-                    notas.textContent = registro.notes;
+                    notas.className = 'text-sm text-slate-600 select-none ml-2';
+                    notas.textContent = 'Notas: '+ registro.notes;
                     elemento.appendChild(notas);
                 }
 

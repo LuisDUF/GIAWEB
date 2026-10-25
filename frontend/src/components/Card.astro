@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 
-const { titulo, class: className = '', subtitulo, classContenido: classContenido = '' } = Astro.props;
+const { titulo, class: className = '', subtitulo, classContenido: classContenido = '', classTitulo: classTitulo = '' } = Astro.props;
 
 ---
 
@@ -29,8 +29,8 @@ const { titulo, class: className = '', subtitulo, classContenido: classContenido
             </div>
         </div>
 
-        <div class="absolute z-0 w-full flex justify-center items-center  overflow-hidden md:h-28 h-20">
-            <div id="que-es-card" class="duration-500 transition-all ease-in-out opacity-100 translate-y-0 tilt-element cursor-pointer bg-blue md:rounded-3xl rounded p-16 md:pt-3 pt-1 px-10 md:min-w-[25rem] max-w-[11rem] flex flex-col gap-4 shadow-md justify-center items-center md:mt-[7.8rem] mt-[5rem]">
+        <div class={`absolute z-0 w-full flex justify-center items-center  overflow-hidden md:h-28 h-20 `}>
+            <div id="que-es-card" class={`duration-500 transition-all ease-in-out opacity-100 translate-y-0 tilt-element cursor-pointer bg-blue md:rounded-3xl rounded p-16 md:pt-3 pt-1 px-10  flex flex-col gap-4 shadow-md justify-center items-center md:mt-[7.8rem] mt-[5rem] ${classTitulo}`}>
                 <h1 class="poetsen-one-regular text-white font-bold text-center select-none pointer-events-none md:text-3xl text-md ">
                     {titulo}
                 </h1>
