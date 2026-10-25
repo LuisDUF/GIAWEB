@@ -6,72 +6,79 @@ import Racha from "../components/analiticas/Racha.astro";
 ---
 
 <ProtectedLayout>
-    <div class="noConsultar transition ease-in-out duration-500 grid grid-cols-2 items-center justify-center gap-20 md:gap-0 md:mt-10 mt-16 p-4">
-    
-        <div class=" transition ease-in-out flex flex-col gap-4 md:gap-10 items-center justify-center hover:cursor-pointer group hover:-translate-y-4 hover:drop-shadow-xl hover:drop-shadow-black duration-500">
-            <div class="bg-blue rounded-full shadow-md shadow-black p-4 md:p-8 items-center flex justify-center md:w-50 w-25">
-                <h1 class="text-xl font-bold text-center hidden group-hover:block text-secondary poetsen-one-regular select-none">Nuevo Registro</h1>
-                <svg class="group-hover:hidden" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#393E46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus preview-icon"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
-            </div>
-        </div>
 
-        <div class=" flex flex-col gap-4 md:gap-10 items-center justify-center hover:cursor-pointer group hover:-translate-y-4 hover:drop-shadow-2xl hover:drop-shadow-black duration-500 transition ease-in-out">
-            <div id="btn-consultar-r" class="bg-blue rounded-full shadow-md shadow-black p-4 md:p-8 items-center flex justify-center md:w-50 w-25">
-                <svg class="group-hover:hidden" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#393E46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table-of-contents preview-icon"><path d="M16 5H3"/><path d="M16 12H3"/><path d="M16 19H3"/><path d="M21 5h.01"/><path d="M21 12h.01"/><path d="M21 19h.01"/></svg>     
-                <h1 class="text-xl font-bold text-center hidden group-hover:block text-secondary poetsen-one-regular select-none">Consultar Registros</h1>
-            </div>
-        </div>
-
-        <Card 
-            titulo="Sesiones de entreno" 
-            subtitulo="<p id='btn-cambiar' class='cursor-pointer underline'>Por día</p>" 
-            class="transition ease-in-out col-span-2 md:col-span-1"
-        >
-            <Sesiones />
-        </Card>
-
-        <Card 
-            titulo="Días de racha" 
-            subtitulo="<p id='btn-racha' class='cursor-pointer underline'>Ver máxima racha</p>" 
-            class="transition ease-in-out col-span-2 md:col-span-1"
-        >
-            <Racha />
-        </Card>
-
-    </div>
-    
-    <div id="Consultar" class=" hidden opacity-0 duration-500 transition ease-in-out w-full py-10 p-40  justify-center ">
-        <div  class="bg-secondary/90  w-full  p-10 rounded-2xl shadow-lg shadow-black">
-
-            <div class="grid grid-cols-3 w-full gap-2 justify-center">
-                <div >
-                    <svg  id="exitConsultar" class=" rounded-full hover:shadow-xl hover:shadow-black hover:cursor-pointer transition duration-200 ease-in-out  hover:-translate-y-1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon"><path d="m15 18-6-6 6-6"/></svg>
-                </div>
-                <form id="filtro-fecha" class="mb-4 flex flex-wrap items-center justify-center gap-3">
-                    <label class="flex flex-col gap-1 text-sm text-white">
-                        <input id="fecha-registros" name="date" type="date" class="rounded-md bg-white px-3 py-2 text-slate-900" />
-                    </label>
-                    <button type="submit" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary poetsen-one-regular duration-200 transition ease-in-out hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Buscar</button>
-                    <button id="limpiar-fecha" type="button" class="rounded-md border border-white px-4 py-2 text-white hover:bg-red transition ease-in-out duration-200 hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Limpiar</button>
-                </form>
-                <div class="text-end">
-<p id="estado-registros" class="mb-3 text-sm text-white select-none" role="status" aria-live="polite"></p>
-
-                </div>
-            </div>
-
-
+<div class="">
+            <div class="noConsultar transition ease-in-out duration-500 grid grid-cols-2 items-center justify-center gap-20 md:gap-0 md:mt-10 mt-38 p-4">
             
-<div id="lista" class="grid grid-cols-3 gap-4">
+                <div class=" transition ease-in-out flex flex-col gap-4 md:gap-10 items-center justify-center hover:cursor-pointer group hover:-translate-y-4 hover:drop-shadow-xl hover:drop-shadow-black duration-500">
+                    <div class="bg-blue rounded-full shadow-md shadow-black p-4 md:p-8 items-center flex justify-center md:w-50 w-25">
+                        <h1 class="text-xl font-bold text-center hidden group-hover:block text-secondary poetsen-one-regular select-none">Nuevo Registro</h1>
+                        <svg class="group-hover:hidden" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#393E46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus preview-icon"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                    </div>
+                </div>
 
-</div>
-            <div class="mt-4 flex items-center justify-between gap-3 text-white">
-                <button id="pagina-anterior" type="button" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary disabled:cursor-not-allowed disabled:opacity-50 poetsen-one-regular duration-200 transition ease-in-out hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Anterior</button>
-                <span class="poetsen-one-regular select-none" id="pagina-actual" aria-live="polite"></span>
-                <button id="pagina-siguiente" type="button" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary disabled:cursor-not-allowed disabled:opacity-50 poetsen-one-regular duration-200 transition ease-in-out hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Siguiente</button>
+                <div class=" flex flex-col gap-4 md:gap-10 items-center justify-center hover:cursor-pointer group hover:-translate-y-4 hover:drop-shadow-2xl hover:drop-shadow-black duration-500 transition ease-in-out">
+                    <div id="btn-consultar-r" class="bg-blue rounded-full shadow-md shadow-black p-4 md:p-8 items-center flex justify-center md:w-50 w-25">
+                        <svg class="group-hover:hidden" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#393E46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table-of-contents preview-icon"><path d="M16 5H3"/><path d="M16 12H3"/><path d="M16 19H3"/><path d="M21 5h.01"/><path d="M21 12h.01"/><path d="M21 19h.01"/></svg>     
+                        <h1 class="text-xl font-bold text-center hidden group-hover:block text-secondary poetsen-one-regular select-none">Consultar Registros</h1>
+                    </div>
+                </div>
+
+                <Card 
+                    titulo="Sesiones de entreno" 
+                    subtitulo="<p id='btn-cambiar' class='cursor-pointer underline'>Por día</p>" 
+                    class="transition ease-in-out col-span-2 md:col-span-1"
+                    classContenido = "md:min-w-[30rem] max-w-[20rem] "
+                >
+                    <Sesiones />
+                </Card>
+
+                <Card 
+                    titulo="Días de racha" 
+                    subtitulo="<p id='btn-racha' class='cursor-pointer underline'>Ver máxima racha</p>" 
+                    class="transition ease-in-out col-span-2 md:col-span-1"
+                    classContenido="md:min-w-[30rem] max-w-[20rem] "
+                >
+                    <Racha />
+                </Card>
+
             </div>
+            
+            <div id="Consultar" class=" hidden opacity-0 duration-500 transition ease-in-out w-full py-10 p-40  justify-center ">
+                <div  class="bg-secondary/90  w-full  p-10 rounded-2xl shadow-lg shadow-black">
+
+                    <div class="grid grid-cols-3 w-full gap-2 justify-center">
+                        <div >
+                            <svg  id="exitConsultar" class=" rounded-full hover:shadow-xl hover:shadow-black hover:cursor-pointer transition duration-200 ease-in-out  hover:-translate-y-1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon"><path d="m15 18-6-6 6-6"/></svg>
+                        </div>
+                        <form id="filtro-fecha" class="mb-4 flex flex-wrap items-center justify-center gap-3">
+                            <label class="flex flex-col gap-1 text-sm text-white">
+                                <input id="fecha-registros" name="date" type="date" class="rounded-md bg-white px-3 py-2 text-slate-900" />
+                            </label>
+                            <button type="submit" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary poetsen-one-regular duration-200 transition ease-in-out hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Buscar</button>
+                            <button id="limpiar-fecha" type="button" class="rounded-md border border-white px-4 py-2 text-white hover:bg-red transition ease-in-out duration-200 hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Limpiar</button>
+                        </form>
+                        <div class="text-end">
+        <p id="estado-registros" class="mb-3 text-sm text-white select-none" role="status" aria-live="polite"></p>
+
+                        </div>
+                    </div>
+
+
+                    
+        <div id="lista" class="grid grid-cols-3 gap-4">
+
         </div>
-    </div>
+                    <div class="mt-4 flex items-center justify-between gap-3 text-white">
+                        <button id="pagina-anterior" type="button" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary disabled:cursor-not-allowed disabled:opacity-50 poetsen-one-regular duration-200 transition ease-in-out hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Anterior</button>
+                        <span class="poetsen-one-regular select-none" id="pagina-actual" aria-live="polite"></span>
+                        <button id="pagina-siguiente" type="button" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary disabled:cursor-not-allowed disabled:opacity-50 poetsen-one-regular duration-200 transition ease-in-out hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Siguiente</button>
+                    </div>
+                </div>
+            </div>
+</div>
+
+
 
 
 

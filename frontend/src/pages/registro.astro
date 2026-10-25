@@ -1,9 +1,59 @@
 ---
+import Racha from "../components/analiticas/Racha.astro";
+import Card from "../components/Card.astro";
+import Ejercicio from "../components/Ejercicio.astro";
 import ProtectedLayout from "../layouts/ProtectedLayout.astro";
 ---
 
 <ProtectedLayout>
 
+    <div class="w-full px-10 ">
+        <div class="bg-secondary rounded-3xl overflow-x-auto  scrollbar-thumb-blue shadow-inner shadow-black ">
+            <div id="tabla-ejercicios" class=" p-10  gap-6 rounded-3xl  grid grid-flow-col grid-rows-1 w-max">
+                <div class="text-center p-4 bg-blue text-white text-lg rounded shadow-md shadow-black  poetsen-one-regular hover:cursor-pointer hover:shadow-blue hover:text-shadow-lg  hover:-translate-y-2 transition duration-800 ease-in-out">
+                    HOLA
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-5 grid-rows-1 gap-0">
+        <div class="col-span-2">
+
+            <div class="grid grid-cols-1 items-center justify-center">
+                <Card
+                    titulo="Ejercicio"
+                    subtitulo = ""
+                    class=""
+                    classContenido="md:min-w-[30rem] max-w-[20rem] "
+                >
+                    <Ejercicio/>
+                </Card>
+            </div>
+
+
+        </div>
+        <div class="col-span-3 col-start-3">
+
+
+            <div class="grid grid-cols-1 items-center justify-center">
+                <Card
+                    titulo="Ejercicio"
+                    subtitulo = ""
+                    class=""
+                    classContenido="w-[80%] "
+                >
+                    <Ejercicio/>
+                </Card>
+            </div>
+
+        </div>
+    </div>
+    
+
+
+
+    
 
 
 <script>

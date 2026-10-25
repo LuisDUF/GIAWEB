@@ -19,7 +19,7 @@ import '../styles/global.css';
 <body class="bg-primary overflow-hidden">
     <div class="absolute inset-0 md:ml-12 ml-20 -mt-16 bg-primary bg-[url('/images/patron.png')] bg-repeat-round h-screen opacity-30"></div>
     
-    <div class="relative w-full h-screen overflow-hidden mb-20">
+    <div class="relative w-full h-screen overflow-scroll scrollbar-none mb-20">
         <header class="absolute bg-secondary z-30 w-full rounded-b-4xl shadow-md shadow-black p-4 md:py-8 md:px-12 flex justify-center items-center">
             <h1 class="text-white md:text-7xl text-5xl poetsen-one-regular text-center select-none">GIA</h1>
         </header> 
@@ -34,9 +34,8 @@ import '../styles/global.css';
             </nav>
         </div>
 
-        <div class="md:mt-55 mt-20 w-full h-screen overflow-auto scrollbar-none z-10">
+        <div class="md:mt-55 mt-20 w-full h-screen z-10">
             <slot />
-        <slot />
         </div>
     </div>
 
