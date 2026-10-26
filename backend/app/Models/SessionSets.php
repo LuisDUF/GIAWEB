@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class SessionSets extends Model
 {
     public $table = 'session_sets';
-
+public $timestamps = false;
     public $fillable = [
         'session_exercise_id',
         'set_number',

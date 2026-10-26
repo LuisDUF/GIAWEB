@@ -7,10 +7,97 @@ use App\Models\Profile;
 use App\Models\WorkoutSession;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class WorkoutSessionController extends Controller
 {
 
+
+public function saveCompleteSession(Request $request, ?string $id = null)
+{
+    // 1. Validación de los datos principales y anidados
+    $validated = $request->validate([
+        'routine_day_id' => ['nullable', 'exists:routine_days,id'],
+        'date' => ['required', 'date'],
+        'duration_minutes' => ['nullable', 'integer', 'min:0'],
+        'notes' => ['nullable', 'string'],
+
+        // Ejercicios de la sesión
+        'exercises' => ['required', 'array', 'min:1'],
+        'exercises.*.exercise_id' => ['required', 'exists:exercises,id'],
+        'exercises.*.order_index' => ['nullable', 'integer'],
+
+        // Series de cada ejercicio
+        'exercises.*.sets' => ['required', 'array', 'min:1'],
+        'exercises.*.sets.*.set_number' => ['required', 'integer', 'min:1'],
+        'exercises.*.sets.*.weight_kg' => ['required', 'numeric', 'min:0'],
+        'exercises.*.sets.*.reps' => ['required', 'integer', 'min:0'],
+        'exercises.*.sets.*.rpe' => ['nullable', 'numeric', 'min:1', 'max:10'],
+        'exercises.*.sets.*.set_type' => ['nullable', 'string'],
+        'exercises.*.sets.*.sub_order' => ['nullable', 'integer'],
+    ]);
+
+    $profile = $this->profileFor($request);
+
+    // 2. Transacción atómica
+    return DB::transaction(function () use ($validated, $profile, $id) {
+
+        if ($id) {
+            // --- ACTUALIZACIÓN ---
+            $session = $profile->workoutSessions()->findOrFail($id);
+
+            $session->update([
+                'routine_day_id' => $validated['routine_day_id'] ?? $session->routine_day_id,
+                'date' => $validated['date'],
+                'duration_minutes' => $validated['duration_minutes'] ?? $session->duration_minutes,
+                'notes' => $validated['notes'] ?? $session->notes,
+            ]);
+
+            // Estrategia limpia para actualización anidada:
+            // Eliminamos los ejercicios y series anteriores y recreamos los nuevos enviados.
+            // (Asegúrate de tener onDelete('cascade') en tus migraciones para session_exercises -> session_sets)
+            $session->sessionExercises()->delete();
+
+        } else {
+            // --- CREACIÓN ---
+            $session = $profile->workoutSessions()->create([
+                'routine_day_id' => $validated['routine_day_id'] ?? null,
+                'date' => $validated['date'],
+                'duration_minutes' => $validated['duration_minutes'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+            ]);
+        }
+
+        // 3. Inserción de Ejercicios y Series
+        foreach ($validated['exercises'] as $exerciseData) {
+            $sessionExercise = $session->sessionExercises()->create([
+                'exercise_id' => $exerciseData['exercise_id'],
+                'order_index' => $exerciseData['order_index'] ?? 0,
+            ]);
+
+            foreach ($exerciseData['sets'] as $setData) {
+                $sessionExercise->sessionSets()->create([
+                    'set_number' => $setData['set_number'],
+                    'weight_kg' => $setData['weight_kg'],
+                    'reps' => $setData['reps'],
+                    'rpe' => $setData['rpe'] ?? null,
+                    'set_type' => $setData['set_type'] ?? 'normal',
+                    'sub_order' => $setData['sub_order'] ?? 0,
+                ]);
+            }
+        }
+
+        // 4. Retornar la sesión cargada con todas sus relaciones
+        return response()->json([
+            'message' => $id ? 'Sesión actualizada correctamente.' : 'Sesión registrada correctamente.',
+            'data' => $session->load([
+                'routineDay.routine',
+                'sessionExercises.exercise',
+                'sessionExercises.sessionSets'
+            ])
+        ], $id ? 200 : 201);
+    });
+}
 
 
 

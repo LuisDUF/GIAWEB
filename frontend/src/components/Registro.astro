@@ -4,13 +4,13 @@ import '../styles/global.css';
 const { titulo, class: className = '', subtitulo } = Astro.props;
 ---
 
-<div class="w-full grid grid-cols-1 gap-4 p-10 py-4 overflow-y-auto scrollbar-thin scrollbar-thumb-blue">
+<div class="w-full grid grid-cols-1 gap-4 p-10 py-4 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-blue">
 
     <div id="series-list" class="grid grid-cols-1 gap-4">
         <template id="serie-template">
-            <div class="grid grid-cols-4 gap-4 select-none serie-item">
+            <div class="grid grid-cols-6 gap-4 select-none serie-item" data-level="parent">
                 <div class="serie-numero col-span-1 text-white text-4xl poetsen-one-regular text-center flex justify-start items-center"></div>
-                <div class="col-span-3">
+                <div class="col-span-4">
                     <div class="bg-primary p-4 rounded-4xl shadow-black shadow-md hover:cursor-pointer hover:shadow-white hover:-translate-y-2 transition duration-300">
                         <div class="grid grid-cols-3 w-full">
                             <div class="text-white justify-center text-center poetsen-one-regular border-r-2 border-white">
@@ -27,91 +27,22 @@ const { titulo, class: className = '', subtitulo } = Astro.props;
                         </div>
                     </div>
                 </div>
+                <!-- Columna del botón de drop -->
+                <div class="col-span-1 container-btn-drop">
+                    <div class="btn-agregar-drop bg-primary p-10 hover:cursor-pointer px-0 rounded-4xl flex justify-center items-center w-30 shadow-black shadow-md hover:shadow-white hover:-translate-y-2 transition duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus preview-icon w-6 h-6"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                    </div>
+                </div>
             </div>
         </template>
     </div>
 
-    <div id="agregar-serie" class="grid grid-cols-4 gap-4">
+    <div id="agregar-serie" class="grid grid-cols-6 gap-4">
         <div class="col-span-1"></div>
         <div class="col-span-1">
-            <!-- Se agregó el id="btn-agregar" para seleccionarlo fácilmente -->
             <div id="btn-agregar" class="bg-primary p-10 hover:cursor-pointer px-0 rounded-4xl flex justify-center items-center w-30 shadow-black shadow-md hover:shadow-white hover:-translate-y-2 transition duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus preview-icon w-6 h-6"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus preview-icon w-6 h-6"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-// Referencias a elementos principales
-const seriesList = document.getElementById('series-list');
-const serieTemplate = document.getElementById('serie-template') as HTMLTemplateElement;
-const btnAgregar = document.getElementById('btn-agregar');
-
-// Función para añadir una nueva serie al cargar o al pulsar el botón
-function agregarNuevaSerie() {
-    if (!serieTemplate || !seriesList) return;
-
-    // Contar cuántas series hay actualmente para calcular el número de la nueva serie
-    const numeroSeriesActuales = seriesList.querySelectorAll('.serie-item').length + 1;
-
-    // Clonar la plantilla
-    const clone = serieTemplate.content.cloneNode(true) as HTMLElement;
-
-    // Asignar el número de serie correspondiente
-    const numeroDiv = clone.querySelector('.serie-numero');
-    if (numeroDiv) {
-        numeroDiv.textContent = numeroSeriesActuales.toString() + ".";
-    }
-
-    // Agregar la nueva serie a la lista
-    seriesList.appendChild(clone);
-}
-
-// 1. Crear automáticamente la primera serie al cargar el componente (opcional pero recomendado)
-document.addEventListener('DOMContentLoaded', () => {
-    agregarNuevaSerie();
-});
-
-// 2. Escuchar el clic en el botón de añadir serie
-btnAgregar?.addEventListener('click', () => {
-    agregarNuevaSerie();
-});
-
-// Evitar scroll accidental en inputs numéricos
-document.addEventListener('wheel', function(event) {
-    if (document.activeElement instanceof HTMLInputElement && document.activeElement.type === 'number') {
-        document.activeElement.blur();
-    }
-});
-
-// Cambiar entre KG y LB y convertir el valor automáticamente
-document.addEventListener('click', function(event) {
-    const target = event.target as HTMLElement;
-    const unitToggle = target.closest('.unit-toggle');
-    if (!unitToggle) return;
-
-    const serieContainer = unitToggle.closest('.grid-cols-3');
-    if (!serieContainer) return;
-
-    const unitText = serieContainer.querySelector('.unit-text');
-    const inputPeso = serieContainer.querySelector('.input-peso') as HTMLInputElement;
-
-    if (!unitText || !inputPeso) return;
-
-    const currentUnit = unitText.textContent?.trim().toUpperCase() || 'KG';
-    const currentValue = parseFloat(inputPeso.value);
-
-    if (currentUnit === 'KG') {
-        unitText.textContent = 'LB';
-        if (!isNaN(currentValue)) {
-            inputPeso.value = (currentValue * 2.20462).toFixed(1);
-        }
-    } else {
-        unitText.textContent = 'KG';
-        if (!isNaN(currentValue)) {
-            inputPeso.value = (currentValue / 2.20462).toFixed(1);
-        }
-    }
-});
-</script>

@@ -10,7 +10,7 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
 
     <div class="opacity-100 transition ease-in-out duration-500" id="ejercicios-registro">
         <div class="w-full px-10 ">
-            <div class="bg-secondary rounded-3xl overflow-x-auto  scrollbar-thumb-blue shadow-inner shadow-black ">
+            <div class="bg-secondary rounded-3xl overflow-x-auto scrollbar-thumb-blue shadow-inner shadow-black ">
                 <div id="tabla-ejercicios" class="p-10 select-none py-4 gap-6 rounded-3xl grid grid-flow-col grid-rows-1 w-max"></div>
             </div>
         </div>
@@ -34,7 +34,7 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
             <div class="col-span-3 col-start-3">
 
 
-                <div id="card-de-registro" class="grid grid-cols-1 items-center justify-center">
+                <div id="card-de-registro" class="card-de-registro grid grid-cols-1 items-center justify-center">
                     <Card
                         titulo=""
                         subtitulo = "<div class='mt-6'></div>"
@@ -54,13 +54,6 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
 
         <div class="w-full flex justify-center select-none">
             <div class="min-w-96 grid grid-cols-2 mt-20 gap-4 justify-center items-center text-center">
-
-                <!--
-                <div class="bg-[#FF8D28] p-4 text-center text-white text-2xl rounded shadow-md shadow-black poetsen-one-regular hover:cursor-pointer hover:shadow-[#FF8D28] hover:text-shadow-lg hover:-translate-y-2 transition duration-800 ease-in-out ">
-                    Cambiar
-                </div>
-
-                -->
             <div class="bg-red p-4 text-center text-white text-2xl rounded shadow-md shadow-black poetsen-one-regular hover:cursor-pointer hover:shadow-red hover:text-shadow-lg hover:-translate-y-2 transition duration-800 ease-in-out ">
                     Saltar
                 </div>
@@ -75,7 +68,7 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
             <div class="grid grid-cols-1 items-center justify-center text-white text-2xl poetsen-one-regular">
                 <Card
                     titulo="Notas"
-                    subtitulo = "<div class=''>Finalizar</div>"
+                    subtitulo = "<div id='btn-finalizar' class='hover:cursor-pointer hover:underline'>Finalizar</div>"
                     class=""
                     classContenido="md:min-w-[100rem] max-w-[20rem] "
                 >
@@ -84,17 +77,11 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
                             <svg class="lucide lucide-chevron-left preview-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                         </button>
                     </div>
-                    <textarea class="h-full mt-10 text-4xl" placeholder="Escribe tus notas" name="" id="area-notas"></textarea>
+                    <textarea class="h-full mt-10 text-4xl text-black p-4 rounded-xl" placeholder="Escribe tus notas" name="" id="area-notas"></textarea>
                 </Card>
             </div>
     </div>
     
-
-
-
-    
-
-
 <script>
     const apiUrl = (import.meta.env.PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api')
         .replace(/\/$/, '');
@@ -110,6 +97,8 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
         set_number: number;
         reps: number | string;
         weight_kg: number | string;
+        rpe?: number;
+        set_type?: string;
     };
 
     type EjercicioRegistrado = {
@@ -128,11 +117,14 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
         session_exercises?: EjercicioRegistrado[] | null;
     };
 
+    let tiempoInicio = Date.now();
+    const urlParams = new URLSearchParams(window.location.search);
+    const idR = urlParams.get('idR') || urlParams.get('idr');
+    const idSession = urlParams.get('id');
+
     function mostrarEjercicios(ejercicios: EjercicioRutina[]): HTMLButtonElement[] {
         const tabla = document.getElementById('tabla-ejercicios');
-        if (!tabla) {
-            throw new Error('No se encontró la tabla de ejercicios.');
-        }
+        if (!tabla) throw new Error('No se encontró la tabla de ejercicios.');
 
         tabla.replaceChildren();
 
@@ -156,10 +148,10 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
     }
 
     async function cargarRegistro() {
-        const id = new URLSearchParams(window.location.search).get('id');
         const token = sessionStorage.getItem('auth_token');
+        const targetId = idSession || idR;
 
-        if (!id || !/^\d+$/.test(id)) {
+        if (!targetId || !/^\d+$/.test(targetId)) {
             console.error('No se recibió un ID válido en la URL.');
             return;
         }
@@ -169,50 +161,66 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
             return;
         }
 
-        const response = await fetch(
-            `${apiUrl}/v1/workout-sessions/${encodeURIComponent(id)}`,
-            {
-                headers: {
-                    Accept: 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        );
+        const endpoint = idR 
+            ? `${apiUrl}/v1/routine/${encodeURIComponent(idR)}`
+            : `${apiUrl}/v1/workout-sessions/${encodeURIComponent(targetId)}`;
+
+        const response = await fetch(endpoint, {
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+        });
 
         if (!response.ok) {
-            throw new Error(`No se pudo obtener el registro (HTTP ${response.status}).`);
+            throw new Error(`No se pudo obtener la información (HTTP ${response.status}).`);
         }
 
-        const registro: RegistroEntrenamiento = await response.json();
-        const areaNotas = document.getElementById('area-notas');
-        if (!(areaNotas instanceof HTMLTextAreaElement)) {
-            throw new Error('No se encontró el área de notas del registro.');
+        const data = await response.json();
+        
+        let registro: RegistroEntrenamiento;
+        let routineDayId: number;
+
+        if (idR) {
+            routineDayId = Number(idR);
+            registro = {
+                notes: '',
+                routine_day: {
+                    routine_day_exercises: data.routine_day_exercises || data.exercises || []
+                },
+                session_exercises: []
+            };
+        } else {
+            routineDayId = data.routine_day_id || 1;
+            registro = data;
         }
-        areaNotas.value = registro.notes ?? '';
+
+        const areaNotas = document.getElementById('area-notas');
+        if (areaNotas instanceof HTMLTextAreaElement) {
+            areaNotas.value = registro.notes ?? '';
+        }
 
         const ejercicios = registro.routine_day?.routine_day_exercises ?? [];
         const botonesEjercicio = mostrarEjercicios(ejercicios);
         const listaSeries = document.getElementById('series-list');
         const plantillaSerie = document.getElementById('serie-template');
-        if (!(listaSeries instanceof HTMLElement)
-            || !(plantillaSerie instanceof HTMLTemplateElement)) {
+        if (!(listaSeries instanceof HTMLElement) || !(plantillaSerie instanceof HTMLTemplateElement)) {
             throw new Error('No se encontró la lista o plantilla de series.');
         }
 
         const tituloEjercicio = document.querySelector('#card-de-registro #que-es-card h1');
-        if (!(tituloEjercicio instanceof HTMLElement)) {
-            throw new Error('No se encontró el título de la tarjeta de registro.');
-        }
 
         const seccionEjercicios = document.getElementById('ejercicios-registro');
         const seccionNotas = document.getElementById('div-notas');
         const botonSiguiente = document.getElementById('siguiente-ejercicio');
         const botonSalirNotas = document.getElementById('exitNotas');
+        const botonFinalizar = document.getElementById('btn-finalizar');
+
         if (!(seccionEjercicios instanceof HTMLElement)
             || !(seccionNotas instanceof HTMLElement)
             || !(botonSiguiente instanceof HTMLButtonElement)
             || !(botonSalirNotas instanceof HTMLButtonElement)) {
-            throw new Error('No se encontraron las secciones del registro o el botón Siguiente.');
+            throw new Error('Faltan elementos de navegación en la interfaz.');
         }
 
         const transicionesPendientes = new WeakMap<HTMLElement, number>();
@@ -256,9 +264,7 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
             if (indiceSeleccionado === null) return;
 
             const ejercicioRutina = ejercicios[indiceSeleccionado];
-            if (!ejercicioRutina) {
-                throw new Error('No se encontró el ejercicio seleccionado en la rutina.');
-            }
+            if (!ejercicioRutina) return;
 
             registro.session_exercises ??= [];
             let ejercicioRegistrado = registro.session_exercises.find(
@@ -280,6 +286,7 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
                     const inputRepeticiones = fila.querySelector('.input-reps');
                     const inputPeso = fila.querySelector('.input-peso');
                     const unidad = fila.querySelector('.unit-text');
+                    
                     if (!(inputRepeticiones instanceof HTMLInputElement)
                         || !(inputPeso instanceof HTMLInputElement)
                         || !(unidad instanceof HTMLElement)) {
@@ -297,107 +304,262 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
                         set_number: indice + 1,
                         reps: inputRepeticiones.value === '' ? '' : Number(inputRepeticiones.value),
                         weight_kg: pesoKg,
+                        rpe: 8,
+                        set_type: fila.getAttribute('data-level') === 'child' ? 'drop' : 'normal'
                     };
                 }
-            );
+            ); // <-- Aquí faltaba cerrar el paréntesis del Array.from
         }
 
         function mostrarEjercicio(indice: number) {
             const ejercicioRutina = ejercicios[indice];
-            if (!ejercicioRutina) {
-                throw new Error('No se encontró el ejercicio seleccionado en la rutina.');
-            }
+            if (!ejercicioRutina) return;
 
             const ejercicioRegistrado = registro.session_exercises?.find(
                 (ejercicio) => ejercicio.exercise_id === ejercicioRutina.exercise_id
-            );
+          );
             const nombreEjercicio = ejercicioRutina.exercise?.name
                 ?? ejercicioRegistrado?.exercise?.name
                 ?? 'Ejercicio';
-            tituloEjercicio.textContent = nombreEjercicio;
+            
+            if (tituloEjercicio instanceof HTMLElement) {
+                tituloEjercicio.textContent = nombreEjercicio;
+            }
 
             const series = ejercicioRegistrado?.session_sets
                 ?.slice()
                 .sort((serieA, serieB) => serieA.set_number - serieB.set_number) ?? [];
-            const seriesAMostrar: Array<SerieRegistrada | null> = series.length > 0 ? series : [null];
+            
             listaSeries.replaceChildren();
 
-            seriesAMostrar.forEach((serie, numeroIndice) => {
-                const fila = plantillaSerie.content.firstElementChild?.cloneNode(true);
-                if (!(fila instanceof HTMLElement)) {
-                    throw new Error('La plantilla de series no tiene una fila válida.');
-                }
+            if (series.length === 0) {
+                const clone = plantillaSerie.content.cloneNode(true) as HTMLElement;
+                const numeroDiv = clone.querySelector('.serie-numero');
+                if (numeroDiv) numeroDiv.textContent = "1.";
+                listaSeries.appendChild(clone);
+            } else {
+                series.forEach((serie, numeroIndice) => {
+                    const clone = plantillaSerie.content.cloneNode(true) as HTMLElement;
+                    const fila = clone.querySelector('.serie-item') as HTMLElement;
+                    const numero = clone.querySelector('.serie-numero');
+                    const inputRepeticiones = clone.querySelector('.input-reps') as HTMLInputElement;
+                    const inputPeso = clone.querySelector('.input-peso') as HTMLInputElement;
 
-                const numero = fila.querySelector('.serie-numero');
-                const inputRepeticiones = fila.querySelector('.input-reps');
-                const inputPeso = fila.querySelector('.input-peso');
-                if (!(numero instanceof HTMLElement)
-                    || !(inputRepeticiones instanceof HTMLInputElement)
-                    || !(inputPeso instanceof HTMLInputElement)) {
-                    throw new Error('La plantilla de series no contiene los campos esperados.');
-                }
-
-                numero.textContent = `${numeroIndice + 1}.`;
-                inputRepeticiones.id = `input-${numeroIndice + 1}-reps`;
-                inputPeso.id = `input-${numeroIndice + 1}-peso`;
-                if (serie) {
-                    inputRepeticiones.value = String(serie.reps);
-                    inputPeso.value = String(serie.weight_kg);
-                }
-
-                listaSeries.appendChild(fila);
+                    if (numero && inputRepeticiones && inputPeso) {
+                        if (serie.set_type === 'drop') {
+                            fila.setAttribute('data-level', 'child');
+                            fila.classList.add('ml-10', 'scale-95', 'opacity-90');
+                            numero.textContent = "↳";
+                            numero.classList.add('text-2xl');
+                            const btnDrop = clone.querySelector('.container-btn-drop');
+                            if (btnDrop) btnDrop.remove();
+                        } else {
+                            fila.setAttribute('data-level', 'parent');
+                            numero.textContent = `${numeroIndice + 1}.`;
+                        }
+                      inputRepeticiones.value = String(serie.reps ?? '');
+                      inputPeso.value = String(serie.weight_kg ?? '');
+                  }
+                  listaSeries.appendChild(clone);
             });
-
-            botonesEjercicio.forEach((boton, botonIndice) => {
-                const seleccionado = botonIndice === indice;
-                boton.disabled = seleccionado;
-                boton.setAttribute('aria-pressed', String(seleccionado));
-                boton.classList.toggle('bg-blue', !seleccionado);
-                boton.classList.toggle('bg-primary', seleccionado);
-                boton.classList.toggle('hover:cursor-pointer', !seleccionado);
-                boton.classList.toggle('hover:shadow-blue', !seleccionado);
-                boton.classList.toggle('hover:text-shadow-lg', !seleccionado);
-                boton.classList.toggle('hover:-translate-y-2', !seleccionado);
-                boton.classList.toggle('cursor-not-allowed', seleccionado);
-                boton.classList.toggle('opacity-70', seleccionado);
-            });
-
-            indiceSeleccionado = indice;
         }
 
-        botonesEjercicio.forEach((boton) => {
-            boton.addEventListener('click', () => {
-                const indice = Number(boton.dataset.exerciseIndex);
-                if (!Number.isInteger(indice) || indice === indiceSeleccionado) return;
-
-                guardarEjercicioActual();
-                mostrarEjercicio(indice);
-            });
+          botonesEjercicio.forEach((boton, botonIndice) => {
+              const seleccionado = botonIndice === indice;
+              boton.disabled = seleccionado;
+              boton.setAttribute('aria-pressed', String(seleccionado));
+              boton.classList.toggle('bg-blue', !seleccionado);
+              boton.classList.toggle('bg-primary', seleccionado);
+              boton.classList.toggle('hover:cursor-pointer', !seleccionado);
+              boton.classList.toggle('opacity-70', seleccionado);
         });
 
-        botonSiguiente.addEventListener('click', () => {
-            if (indiceSeleccionado === null) return;
+          indiceSeleccionado = indice;
+      }
 
-            guardarEjercicioActual();
-            const siguienteIndice = indiceSeleccionado + 1;
-            if (siguienteIndice < ejercicios.length) {
-                mostrarEjercicio(siguienteIndice);
-                return;
-            }
+      botonesEjercicio.forEach((boton) => {
+          boton.addEventListener('click', () => {
+              const indice = Number(boton.dataset.exerciseIndex);
+              if (!Number.isInteger(indice) || indice === indiceSeleccionado) return;
 
-            cambiarVisibilidadGradualmente(seccionEjercicios, false);
-            cambiarVisibilidadGradualmente(seccionNotas, true);
+              guardarEjercicioActual();
+              mostrarEjercicio(indice);
         });
+    });
 
-        botonSalirNotas.addEventListener('click', () => {
-            cambiarVisibilidadGradualmente(seccionNotas, false);
-            cambiarVisibilidadGradualmente(seccionEjercicios, true);
-        });
+      botonSiguiente.addEventListener('click', () => {
+          if (indiceSeleccionado === null) return;
 
-        if (ejercicios.length > 0) {
-            mostrarEjercicio(0);
+          guardarEjercicioActual();
+          const siguienteIndice = indiceSeleccionado + 1;
+          if (siguienteIndice < ejercicios.length) {
+              mostrarEjercicio(siguienteIndice);
+              return;
         }
+
+        cambiarVisibilidadGradualmente(seccionEjercicios, false);
+        cambiarVisibilidadGradualmente(seccionNotas, true);
+    });
+
+      botonSalirNotas.addEventListener('click', () => {
+          cambiarVisibilidadGradualmente(seccionNotas, false);
+          cambiarVisibilidadGradualmente(seccionEjercicios, true);
+    });
+
+    // Evento al pulsar "Finalizar" para enviar la petición POST o PUT al backend
+    botonFinalizar?.addEventListener('click', async () => {
+          guardarEjercicioActual();
+
+          const areaNotas = document.getElementById('area-notas');
+          const notasTexto = areaNotas instanceof HTMLTextAreaElement ? areaNotas.value : '';
+
+          const duracionMinutos = Math.max(1, Math.round((Date.now() - tiempoInicio) / 60000));
+          const ahora = new Date();
+          const fechaFormateada = ahora.toISOString().slice(0, 19).replace('T', ' ');
+
+          const payload = {
+              routine_day_id: Number(idR || routineDayId || 1),
+              date: fechaFormateada,
+              duration_minutes: duracionMinutos,
+              notes: notasTexto,
+              exercises: (registro.session_exercises ?? []).map((ex, index) => ({
+                  exercise_id: ex.exercise_id,
+                  order_index: index + 1,
+                  sets: (ex.session_sets ?? []).map((set, sIndex) => ({
+                      set_number: sIndex + 1,
+                      weight_kg: Number(set.weight_kg) || 0,
+                      reps: Number(set.reps) || 0,
+                      rpe: set.rpe || 8,
+                      set_type: set.set_type || 'normal'
+                  }))
+              }))
+          };
+
+          console.log("=== ENVIANDO PAYLOAD AL SERVIDOR ===");
+          console.log(JSON.stringify(payload, null, 2));
+
+          try {
+            const endpointUrl = idSession 
+                ? `${apiUrl}/v1/workout-sessions/${idSession}` // Laravel lo recibe como PUT y entra a saveCompleteSession($request, $id)
+                : `${apiUrl}/v1/workout-sessions`;            // Laravel lo recibe como POST y entra a saveCompleteSession($request)
+
+            const methodType = idSession ? 'PUT' : 'POST';
+              const response = await fetch(endpointUrl, {
+                  method: methodType,
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                  },
+                  body: JSON.stringify(payload)
+              });
+
+              if (!response.ok) {
+                  const errorData = await response.json();
+                  console.error("Error devuelto por el servidor:", errorData);
+                  alert("Hubo un error al guardar el entrenamiento. Revisa la consola.");
+                  return;
+              }
+
+              const resultado = await response.json();
+              console.log("¡Guardado exitoso!", resultado);
+              alert("¡Entrenamiento guardado correctamente!");
+              
+              // Opcional: Redirigir al usuario al dashboard o lista de sesiones
+              // window.location.href = '/dashboard';
+
+      } catch (error) {
+          console.error("Error de red al enviar el entrenamiento:", error);
+          alert("Error de conexión con el servidor.");
+      }
+    });
+
+      if (ejercicios.length > 0) {
+          mostrarEjercicio(0);
+      }
+  }
+
+    function agregarNuevaSerie() {
+      if (!serieTemplate || !seriesList) return;
+      const parentSeries = seriesList.querySelectorAll('.serie-item[data-level="parent"]');
+      const nuevoNumero = parentSeries.length + 1;
+      const clone = serieTemplate.content.cloneNode(true) as HTMLElement;
+      const numeroDiv = clone.querySelector('.serie-numero');
+      if (numeroDiv) numeroDiv.textContent = nuevoNumero.toString() + ".";
+      seriesList.appendChild(clone);
     }
+
+    function agregarSubserie(btnDrop: HTMLElement) {
+      if (!serieTemplate || !seriesList) return;
+      const currentSerieItem = btnDrop.closest('.serie-item');
+      if (!currentSerieItem) return;
+
+      const clone = serieTemplate.content.cloneNode(true) as HTMLElement;
+      const subItem = clone.querySelector('.serie-item') as HTMLElement;
+      subItem.setAttribute('data-level', 'child');
+      subItem.classList.add('ml-10', 'scale-95', 'opacity-90');
+
+      const numeroDiv = clone.querySelector('.serie-numero');
+      if (numeroDiv) {
+          numeroDiv.textContent = "↳";
+          numeroDiv.classList.add('text-2xl');
+      }
+
+      const containerBtnDrop = clone.querySelector('.container-btn-drop');
+      if (containerBtnDrop) containerBtnDrop.remove();
+
+      let insertTarget = currentSerieItem;
+      let nextElem = currentSerieItem.nextElementSibling;
+      while (nextElem && nextElem.classList.contains('serie-item') && nextElem.getAttribute('data-level') === 'child') {
+          insertTarget = nextElem;
+          nextElem = nextElem.nextElementSibling;
+      }
+      insertTarget.after(subItem);
+    }
+
+    const seriesList = document.getElementById('series-list');
+    const serieTemplate = document.getElementById('serie-template') as HTMLTemplateElement;
+    const btnAgregar = document.getElementById('btn-agregar');
+
+    btnAgregar?.addEventListener('click', () => agregarNuevaSerie());
+
+    document.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement;
+        const btnDrop = target.closest('.btn-agregar-drop');
+        if (btnDrop) {
+            agregarSubserie(btnDrop as HTMLElement);
+        }
+    });
+
+    document.addEventListener('wheel', (event) => {
+        if (document.activeElement instanceof HTMLInputElement && document.activeElement.type === 'number') {
+            document.activeElement.blur();
+        }
+    });
+
+    document.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement;
+        const unitToggle = target.closest('.unit-toggle');
+        if (!unitToggle) return;
+
+        const serieContainer = unitToggle.closest('.grid-cols-3');
+        if (!serieContainer) return;
+
+        const unitText = serieContainer.querySelector('.unit-text');
+        const inputPeso = serieContainer.querySelector('.input-peso') as HTMLInputElement;
+        if (!unitText || !inputPeso) return;
+
+        const currentUnit = unitText.textContent?.trim().toUpperCase() || 'KG';
+        const currentValue = parseFloat(inputPeso.value);
+
+        if (currentUnit === 'KG') {
+            unitText.textContent = 'LB';
+            if (!isNaN(currentValue)) inputPeso.value = (currentValue * 2.20462).toFixed(1);
+        } else {
+            unitText.textContent = 'KG';
+            if (!isNaN(currentValue)) inputPeso.value = (currentValue / 2.20462).toFixed(1);
+        }
+    });
 
     void cargarRegistro().catch((error) => {
         console.error('Error al cargar el registro:', error);
