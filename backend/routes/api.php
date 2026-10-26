@@ -6,7 +6,7 @@ use App\Http\Controllers\API\V1\WorkoutSessionController;
 use App\Http\Controllers\Api\SessionExerciseController;
 use App\Http\Controllers\Api\V1\RoutineDayController;
 use App\Http\Controllers\API\V1\AuthController;
-
+use App\Http\Controllers\API\V1\UserRoutineSubscriptionController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -46,6 +46,10 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::get('/workout-sessions/{id}', [WorkoutSessionController::class, 'show']);
     Route::get('/workout-sessions/{id}/routine', [WorkoutSessionController::class, 'routine']);
     Route::get('/workout-sessions/{id}/routine_day', [WorkoutSessionController::class, 'routine_day']);
+
+    // ANTES: Route::get('/profiles/{id}/subscribed-routines', ...)
+    // AHORA:
+    Route::get('/profile/subscribed-routines', [UserRoutineSubscriptionController::class, 'getSubscribedRoutines']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

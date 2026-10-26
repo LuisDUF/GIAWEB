@@ -60,10 +60,15 @@ class Profile extends Model
         return $this->belongsToMany(\App\Models\WeekDay::class, 'profile_rest_days');
     }
 
-    public function routine1s(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
-    {
-        return $this->belongsToMany(\App\Models\Routine::class, 'user_routine_subscriptions');
-    }
+public function subscribedRoutines(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+{
+    return $this->belongsToMany(
+        \App\Models\Routine::class,
+        'user_routine_subscriptions', // Tabla pivote
+        'user_id',                    // Foreign key en la pivote que apunta a Profile
+        'routine_id'                  // Foreign key en la pivote que apunta a Routine
+    );
+}
 
     public function workoutTags(): \Illuminate\Database\Eloquent\Relations\HasMany
     {

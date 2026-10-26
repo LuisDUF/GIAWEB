@@ -8,84 +8,260 @@ import Racha from "../components/analiticas/Racha.astro";
 <ProtectedLayout>
 
 <div class="">
-            <div class="noConsultar transition ease-in-out duration-500 grid grid-cols-2 items-center justify-center gap-20 md:gap-0 md:mt-10 mt-38 p-4">
-            
-                <div class=" transition ease-in-out flex flex-col gap-4 md:gap-10 items-center justify-center hover:cursor-pointer group hover:-translate-y-4 hover:drop-shadow-xl hover:drop-shadow-black duration-500">
-                    <div class="bg-blue rounded-full shadow-md shadow-black p-4 md:p-8 items-center flex justify-center md:w-50 w-25">
-                        <h1 class="text-xl font-bold text-center hidden group-hover:block text-secondary poetsen-one-regular select-none">Nuevo Registro</h1>
-                        <svg class="group-hover:hidden" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#393E46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus preview-icon"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
-                    </div>
-                </div>
-
-                <div class=" flex flex-col gap-4 md:gap-10 items-center justify-center hover:cursor-pointer group hover:-translate-y-4 hover:drop-shadow-2xl hover:drop-shadow-black duration-500 transition ease-in-out">
-                    <div id="btn-consultar-r" class="bg-blue rounded-full shadow-md shadow-black p-4 md:p-8 items-center flex justify-center md:w-50 w-25">
-                        <svg class="group-hover:hidden" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#393E46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table-of-contents preview-icon"><path d="M16 5H3"/><path d="M16 12H3"/><path d="M16 19H3"/><path d="M21 5h.01"/><path d="M21 12h.01"/><path d="M21 19h.01"/></svg>     
-                        <h1 class="text-xl font-bold text-center hidden group-hover:block text-secondary poetsen-one-regular select-none">Consultar Registros</h1>
-                    </div>
-                </div>
-
-                <Card 
-                    titulo="Sesiones de entreno" 
-                    subtitulo="<p id='btn-cambiar' class='cursor-pointer underline'>Por día</p>" 
-                    class="transition ease-in-out col-span-2 md:col-span-1"
-                    classContenido = "md:min-w-[30rem] max-w-[20rem] justify-center"
-                    
-                >
-                    <Sesiones />
-                </Card>
-
-                <Card 
-                    titulo="Días de racha" 
-                    subtitulo="<p id='btn-racha' class='cursor-pointer underline'>Ver máxima racha</p>" 
-                    class="transition ease-in-out col-span-2 md:col-span-1"
-                    classContenido="md:min-w-[30rem] max-w-[20rem] justify-center"
-                    
-                >
-                    <Racha />
-                </Card>
-
+    <div class="noConsultar noNuevoR transition ease-in-out duration-500 grid grid-cols-2 items-center justify-center gap-20 md:gap-0 md:mt-10 mt-38 p-4">
+    
+        <div id="btn-n-r" class=" transition ease-in-out flex flex-col gap-4 md:gap-10 items-center justify-center hover:cursor-pointer group hover:-translate-y-4 hover:drop-shadow-xl hover:drop-shadow-black duration-500">
+            <div class="bg-blue rounded-full shadow-md shadow-black p-4 md:p-8 items-center flex justify-center md:w-50 w-25">
+                <h1 class="text-xl font-bold text-center hidden group-hover:block text-secondary poetsen-one-regular select-none">Nuevo Registro</h1>
+                <svg class="group-hover:hidden" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#393E46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus preview-icon"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
             </div>
-            
-            <div id="Consultar" class=" hidden opacity-0 duration-500 transition ease-in-out w-full py-10 p-40  justify-center ">
-                <div  class="bg-secondary/90  w-full  p-10 rounded-2xl shadow-lg shadow-black">
-
-                    <div class="grid grid-cols-3 w-full gap-2 justify-center">
-                        <div >
-                            <svg  id="exitConsultar" class=" rounded-full hover:shadow-xl hover:shadow-black hover:cursor-pointer transition duration-200 ease-in-out  hover:-translate-y-1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon"><path d="m15 18-6-6 6-6"/></svg>
-                        </div>
-                        <form id="filtro-fecha" class="mb-4 flex flex-wrap items-center justify-center gap-3">
-                            <label class="flex flex-col gap-1 text-sm text-white">
-                                <input id="fecha-registros" name="date" type="date" class="rounded-md bg-white px-3 py-2 text-slate-900" />
-                            </label>
-                            <button type="submit" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary poetsen-one-regular duration-200 transition ease-in-out hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Buscar</button>
-                            <button id="limpiar-fecha" type="button" class="rounded-md border border-white px-4 py-2 text-white hover:bg-red transition ease-in-out duration-200 hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Limpiar</button>
-                        </form>
-                        <div class="text-end">
-        <p id="estado-registros" class="mb-3 text-sm text-white select-none" role="status" aria-live="polite"></p>
-
-                        </div>
-                    </div>
-
-
-                    
-        <div id="lista" class="grid grid-cols-3 gap-4">
-
         </div>
-                    <div class="mt-4 flex items-center justify-between gap-3 text-white">
-                        <button id="pagina-anterior" type="button" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary disabled:cursor-not-allowed disabled:opacity-50 poetsen-one-regular duration-200 transition ease-in-out hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Anterior</button>
-                        <span class="poetsen-one-regular select-none" id="pagina-actual" aria-live="polite"></span>
-                        <button id="pagina-siguiente" type="button" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary disabled:cursor-not-allowed disabled:opacity-50 poetsen-one-regular duration-200 transition ease-in-out hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Siguiente</button>
-                    </div>
+
+        <div class=" flex flex-col gap-4 md:gap-10 items-center justify-center hover:cursor-pointer group hover:-translate-y-4 hover:drop-shadow-2xl hover:drop-shadow-black duration-500 transition ease-in-out">
+            <div id="btn-consultar-r" class="bg-blue rounded-full shadow-md shadow-black p-4 md:p-8 items-center flex justify-center md:w-50 w-25">
+                <svg class="group-hover:hidden" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#393E46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table-of-contents preview-icon"><path d="M16 5H3"/><path d="M16 12H3"/><path d="M16 19H3"/><path d="M21 5h.01"/><path d="M21 12h.01"/><path d="M21 19h.01"/></svg>     
+                <h1 class="text-xl font-bold text-center hidden group-hover:block text-secondary poetsen-one-regular select-none">Consultar Registros</h1>
+            </div>
+        </div>
+
+        <Card 
+            titulo="Sesiones de entreno" 
+            subtitulo="<p id='btn-cambiar' class='cursor-pointer underline'>Por día</p>" 
+            class="transition ease-in-out col-span-2 md:col-span-1"
+            classContenido = "md:min-w-[30rem] max-w-[20rem] justify-center"
+            
+        >
+            <Sesiones />
+        </Card>
+
+        <Card 
+            titulo="Días de racha" 
+            subtitulo="<p id='btn-racha' class='cursor-pointer underline'>Ver máxima racha</p>" 
+            class="transition ease-in-out col-span-2 md:col-span-1"
+            classContenido="md:min-w-[30rem] max-w-[20rem] justify-center"
+            
+        >
+            <Racha />
+        </Card>
+
+    </div>
+    
+    <div id="Consultar" class=" hidden opacity-0 duration-500 transition ease-in-out w-full py-10 p-40  justify-center ">
+        <div  class="bg-secondary/90  w-full  p-10 rounded-2xl shadow-lg shadow-black">
+            <div class="grid grid-cols-3 w-full gap-2 justify-center">
+                <div >
+                    <svg  id="exitConsultar" class=" rounded-full hover:shadow-xl hover:shadow-black hover:cursor-pointer transition duration-200 ease-in-out  hover:-translate-y-1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon"><path d="m15 18-6-6 6-6"/></svg>
+                </div>
+                <form id="filtro-fecha" class="mb-4 flex flex-wrap items-center justify-center gap-3">
+                    <label class="flex flex-col gap-1 text-sm text-white">
+                        <input id="fecha-registros" name="date" type="date" class="rounded-md bg-white px-3 py-2 text-slate-900" />
+                    </label>
+                    <button type="submit" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary poetsen-one-regular duration-200 transition ease-in-out hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Buscar</button>
+                    <button id="limpiar-fecha" type="button" class="rounded-md border border-white px-4 py-2 text-white hover:bg-red transition ease-in-out duration-200 hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Limpiar</button>
+                </form>
+                <div class="text-end">
+                    <p id="estado-registros" class="mb-3 text-sm text-white select-none" role="status" aria-live="polite"></p>
                 </div>
             </div>
+   
+            <div id="lista" class="grid grid-cols-3 gap-4">
+
+            </div>
+            <div class="mt-4 flex items-center justify-between gap-3 text-white">
+                <button id="pagina-anterior" type="button" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary disabled:cursor-not-allowed disabled:opacity-50 poetsen-one-regular duration-200 transition ease-in-out hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Anterior</button>
+                <span class="poetsen-one-regular select-none" id="pagina-actual" aria-live="polite"></span>
+                <button id="pagina-siguiente" type="button" class="rounded-md bg-blue px-4 py-2 font-semibold text-secondary disabled:cursor-not-allowed disabled:opacity-50 poetsen-one-regular duration-200 transition ease-in-out hover:-translate-y-2 shadow-dark shadow-sm hover:shadow-white hover:text-white hover:cursor-pointer select-none">Siguiente</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="nuevo-r-div" class="duration-500 transition ease-in-out w-full py-10 p-40  justify-center ">
+        <div class="grid grid-cols-1 items-center justify-center">
+            <div id="rutinas" class="grid grid-cols-1 items-center justify-center">
+                <Card
+                titulo="Rutinas"
+                subtitulo="<div id='btn-salir-n-r' class='mt-0'>Volver</div>"
+                classContenido = "md:min-w-[30rem] max-w-[20rem] "
+                >
+                    <div class="px-30 py-10 pt-5  overflow-y-auto scrollbar-thin scrollbar-thumb-blue ">
+                        <div id="lista-rutinas" class="grid grid-cols-2 w-full gap-5 justify-center items-center">
+                            <div id="btn-ir-crear" class="p-4 bg-primary rounded-2xl shadow-black shadow-md transition ease-in-out duration-300 hover:cursor-pointer hover:-translate-y-2 hover:shadow-lg w-full text-center flex justify-center items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus preview-icon"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                            </div>         
+                            <div id="btn-ir-rutinas" class="p-4 bg-primary rounded-2xl shadow-black shadow-md transition ease-in-out duration-300 hover:cursor-pointer hover:-translate-y-2 hover:shadow-lg w-full text-center flex justify-center items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-globe preview-icon"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                </Card>
+            </div>
+            <div id="dias" class="hidden grid grid-cols-1 items-center justify-center">
+                <Card
+                titulo = "Dias"
+                subtitulo="<div id='btn-volver-a-rutinas' class='mt-0'>Volver</div>"
+                classContenido = "md:min-w-[30rem] max-w-[20rem] "
+                >
+                    <div class="px-30 py-10 pt-5  overflow-y-auto scrollbar-thin scrollbar-thumb-blue ">
+                        <div id="lista-dias" class="grid grid-cols-2 w-full gap-5 justify-center items-center">
+                            
+                        </div>
+                    </div>
+                </Card>
+            </div>
+        </div>
+    </div>
+
+
+
 </div>
 
-
-
-
-
-
 <script>
+
+let btnIrRutina = document.getElementById('btn-ir-rutinas');
+btnIrRutina?.addEventListener('click', () => {
+    window.location.href = '/rutinas';
+});
+
+
+let btnNuevoRegistro = document.getElementById('btn-n-r');
+let divNuevoRegistro = document.getElementById('nuevo-r-div');
+
+btnNuevoRegistro?.addEventListener('click', async () => {
+    divNuevoRegistro?.classList.remove('opacity-0');
+    setTimeout(() => {
+        divNuevoRegistro?.classList.remove('hidden');
+    }, 500);
+
+    const elementos = document.querySelectorAll('.noConsultar');
+    elementos.forEach((elemento) => {
+        elemento.classList.add('opacity-0');
+        setTimeout(() => elemento.classList.add('hidden'), 500);
+    });
+
+    const apiUrl = (import.meta.env.PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+    const token = sessionStorage.getItem('auth_token');
+
+    try {
+        const response = await fetch(`${apiUrl}/v1/profile/subscribed-routines`, {
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.message ?? `No se pudieron obtener las rutinas (HTTP ${response.status}).`);
+        }
+
+        const resultado = await response.json();
+        const rutinas = resultado.data || [];
+
+        const listaRutinas = document.getElementById('lista-rutinas');
+        if (listaRutinas) {
+            const elementosFijos = Array.from(listaRutinas.children).slice(0, 2);
+            listaRutinas.replaceChildren(...elementosFijos);
+
+            if (rutinas.length === 0) {
+                const mensajeVacio = document.createElement('div');
+                mensajeVacio.className = 'col-span-2 p-4 text-center text-white/70 poetsen-one-regular';
+                mensajeVacio.textContent = 'No tienes rutinas suscritas aún.';
+                listaRutinas.appendChild(mensajeVacio);
+            } else {
+                rutinas.forEach((rutina: any) => {
+                    const tarjeta = document.createElement('div');
+                    tarjeta.className = 'p-4 col-span-2 bg-primary rounded-2xl shadow-black shadow-md transition ease-in-out duration-300 hover:cursor-pointer hover:-translate-y-2 hover:shadow-lg w-full text-center flex justify-center items-center';
+                    
+                    // --- ACCIÓN AL HACER CLIC EN UNA RUTINA ---
+                    tarjeta.addEventListener('click', () => {
+                        mostrarDiasDeRutina(rutina);
+                    });
+
+                    const titulo = document.createElement('h1');
+                    titulo.className = 'text-white poetsen-one-regular text-4xl select-none';
+                    titulo.textContent = rutina.name || 'Rutina sin nombre';
+
+                    tarjeta.appendChild(titulo);
+                    listaRutinas.appendChild(tarjeta);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error al cargar rutinas:', error);
+    }
+});
+
+// --- FUNCIÓN PARA CAMBIAR A LA VISTA DE DÍAS ---
+function mostrarDiasDeRutina(rutina: any) {
+    const divRutinas = document.getElementById('rutinas');
+    const divDias = document.getElementById('dias');
+    const listaDias = document.getElementById('lista-dias');
+
+    if (!divRutinas || !divDias || !listaDias) return;
+
+    // Ocultar sección de rutinas y mostrar sección de días
+    divRutinas.classList.add('hidden');
+    divDias.classList.remove('hidden');
+
+    // Limpiar listado anterior de días
+    listaDias.replaceChildren();
+
+    const dias = rutina.routine_days || rutina.routineDays || [];
+
+    if (dias.length === 0) {
+        const mensajeVacio = document.createElement('div');
+        mensajeVacio.className = 'col-span-2 p-4 text-center text-white/70 poetsen-one-regular';
+        mensajeVacio.textContent = 'Esta rutina no tiene días registrados.';
+        listaDias.appendChild(mensajeVacio);
+    } else {
+        dias.forEach((dia: any) => {
+            const tarjetaDia = document.createElement('div');
+            tarjetaDia.className = 'p-4 col-span-2 bg-primary rounded-2xl shadow-black shadow-md transition ease-in-out duration-300 hover:cursor-pointer hover:-translate-y-2 hover:shadow-lg w-full text-center flex justify-center items-center';
+            
+            // Redirigir al hacer clic en un día específico
+            tarjetaDia.addEventListener('click', () => {
+                window.location.href = `/registro?idr=${encodeURIComponent(dia.id)}`;
+            });
+
+            const tituloDia = document.createElement('h1');
+            tituloDia.className = 'text-white poetsen-one-regular text-3xl select-none';
+            tituloDia.textContent = dia.name || 'Día sin nombre';
+
+            tarjetaDia.appendChild(tituloDia);
+            listaDias.appendChild(tarjetaDia);
+        });
+    }
+}
+
+// --- BOTÓN VOLVER DESDE DÍAS A RUTINAS ---
+const btnVolverARutinas = document.getElementById('btn-volver-a-rutinas');
+btnVolverARutinas?.addEventListener('click', () => {
+    const divRutinas = document.getElementById('rutinas');
+    const divDias = document.getElementById('dias');
+
+    if (divRutinas && divDias) {
+        divDias.classList.add('hidden');
+        divRutinas.classList.remove('hidden');
+    }
+});
+
+let btnSalir = document.getElementById('btn-salir-n-r');
+btnSalir?.addEventListener('click', () => {
+    divNuevoRegistro?.classList.add('opacity-0');
+    setTimeout(() => {
+        divNuevoRegistro?.classList.add('hidden');
+    }, 500);
+
+    const elementos = document.querySelectorAll('.noConsultar');
+    elementos.forEach((elemento) => {
+        elemento.classList.remove('opacity-0');
+        setTimeout(() => elemento.classList.remove('hidden'), 500);
+    });
+});
+
+
+
+
         let estadoFiltro = 1; // 1: día, 2: semana, 3: mes, 4: año
         const btnCambiar = document.getElementById('btn-cambiar');
         
@@ -331,5 +507,5 @@ elemento.addEventListener('click', () => {
                 });
             });
         });
-    </script>
+</script>
 </ProtectedLayout>
