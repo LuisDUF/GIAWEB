@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\SessionExerciseController;
 use App\Http\Controllers\Api\V1\RoutineDayController;
 use App\Http\Controllers\API\V1\AuthController;
 use App\Http\Controllers\API\V1\UserRoutineSubscriptionController;
+use App\Http\Controllers\API\V1\RoutineController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -20,13 +21,16 @@ Route::post('/register', [AuthController::class, 'register']);
 // Grupo protegido con Sanctum y prefijo v1
 Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
 
-
+    Route::get('/rutina/{id}', [RoutineController::class, 'show']);
 
     // Rutinas
     Route::get('/routine/{id}', [RoutineDayController::class, 'show']);
 
     // Session Exercises Resource
     Route::apiResource('session-exercises', SessionExerciseController::class);
+    Route::apiResource('routine', RoutineController::class);
+
+    // Suscripción a rutinas
 
     // --- RUTAS DE WORKOUT SESSIONS ---
 
@@ -50,6 +54,8 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // ANTES: Route::get('/profiles/{id}/subscribed-routines', ...)
     // AHORA:
     Route::get('/profile/subscribed-routines', [UserRoutineSubscriptionController::class, 'getSubscribedRoutines']);
+    Route::post('/profile/subscribed-routines', [UserRoutineSubscriptionController::class, 'store']);
+
 });
 
 Route::middleware('auth:sanctum')->group(function () {

@@ -5,7 +5,321 @@ import Sesiones from "../components/analiticas/Sesiones.astro";
 import Racha from "../components/analiticas/Racha.astro";
 ---
 
-
 <ProtectedLayout>
-    
+    <div id="buscar" class="p-10 transition duration-500 ease-in-out">
+        <div class="rounded-full bg-secondary flex justify-center p-10 w-full items-center gap-6">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search preview-icon"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+            <input id="input-buscar" placeholder="Buscar rutina..." class="text-white text-3xl poetsen-one-regular outline-none bg-transparent w-full max-w-xl" type="text">
+        </div>
+
+        <div id="lista-rutinas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-10">
+            <!-- Tarjeta de ejemplo (se usará como plantilla o se reemplazará) -->
+            <div id="ejemplo" class="relative pt-6 max-w-lg poetsen-one-regular select-none group  hover:-translate-y-2 hover:cursor-pointer">
+                <!-- Pestañas Superiores (Tabs) -->
+                <div class="absolute top-0 left-0 right-0 flex justify-between px-6 z-0">
+                    <div class="bg-[#00a8ab] text-white text-xs sm:text-sm px-6 py-1 rounded-t-xl min-w-[70px] text-center shadow-sm">ID</div>
+                    <div class="bg-[#00a8ab] text-white text-xs sm:text-sm px-10 py-1 rounded-t-xl min-w-[140px] text-center shadow-sm">Nombre</div>
+                    <div class="bg-[#00a8ab] text-white text-xs sm:text-sm px-6 py-1 rounded-t-xl min-w-[90px] text-center shadow-sm">User</div>
+                </div>
+
+                <!-- Cuerpo de la Tarjeta Oscura -->
+                <div class="relative z-10 bg-[#383d46] poetsen-one-regular text-white rounded-2xl p-4 pl-0 sm:pl-0 sm:p-5 flex items-center justify-between  border border-secondary shadow-md shadow-black group-hover:shadow-lg group-hover:shadow-blue">
+                    <div class="w-1/4 text-center font-extrabold text-2xl sm:text-3xl tracking-tight card-id">10</div>
+                    <div class="w-2/4 text-center font-black text-xl sm:text-2xl tracking-wide px-2 card-nombre">Rutina chida</div>
+                    <div class="w-1/4 text-center poetsen-one-regular text-xl sm:text-2xl tracking-tight card-user">LuisDuf</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-10 transition duration-500 ease-in-out hidden opacity-0 select-none" id="analizar">
+        <div class=" rounded-full bg-secondary grid grid-cols-3  justify-center p-10 px-80 w-full items-center gap-2 text-white poetsen-one-regular text-3xl shadow-md shadow-black">
+            <div class="col-span-1" id="">
+                <h1 id="idRutina" class="">#10</h1>
+            </div>
+            <div class="col-span-1 text-center">
+                <h1 id="rutina-nombre">Rutina nombre</h1>
+                <h2 id="rutina-autor" class="text-2xl">Luis</h2>
+            </div>
+            <div></div>
+        </div>
+
+        <div id="lista-dias" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-10">
+
+        </div>
+
+        <div class="w-full mt-10 flex justify-center items-center gap-10">
+            <button id="btn-suscribirse" class="bg-green p-6 hover:cursor-pointer text-3xl text-white poetsen-one-regular shadow-black hover:-translate-y-2 hover:shadow-green shadow-md hover:shadow-lg rounded-3xl transition-all">
+                Suscribirse
+            </button>            
+            <button id="btn-volver" class="bg-blue p-6 hover:cursor-pointer text-3xl text-white poetsen-one-regular shadow-black hover:-translate-y-2 hover:shadow-blue shadow-md hover:shadow-lg rounded-3xl">
+                Volver
+            </button>
+        </div>
+
+        <div id="ejemplo2" class="hidden relative pt-6 max-w-lg poetsen-one-regular hover:-translate-y-2 group">
+            <!-- Pestañas Superiores (Tabs) -->
+            <div class="absolute top-0 left-0 right-0 flex justify-between px-8 z-0">
+                <!-- Tab Día -->
+                <div class="bg-[#00a8ab] text-white  text-xs sm:text-sm px-8 py-1 rounded-t-xl min-w-[90px] text-center shadow-sm">
+                Día
+                </div>
+
+                <!-- Tab Nombre -->
+                <div class="bg-[#00a8ab] text-white  text-xs sm:text-sm px-16 py-1 rounded-t-xl min-w-[220px] text-center shadow-sm">
+                Nombre
+                </div>
+            </div>
+
+            <!-- Cuerpo de la Tarjeta Oscura -->
+            <div class="relative z-10 bg-secondary text-white rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-md group-hover:shadow-lg  group-hover:shadow-blue border border-gray-700/30 shadow-black ">
+                <!-- Valor Día -->
+                <div class="cardID w-1/4 text-center ml-4 font-extrabold text-2xl sm:text-3xl tracking-tight">
+                1
+                </div>
+
+                <!-- Valor Nombre -->
+                <div class="cardNombre w-3/4 text-center ml-34  font-black text-xl sm:text-2xl tracking-wide px-2 truncate">
+                Ejemplo
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+<script>
+    const btnVolver = document.getElementById('btn-volver');
+    btnVolver?.addEventListener('click',()=>{
+        const divBuscar = document.getElementById('buscar');
+
+        const divAnalizar = document.getElementById('analizar');
+        divAnalizar?.classList.add("opacity-0");
+        divAnalizar?.classList.remove("opacity-100");
+        setTimeout(()=>{
+            divAnalizar?.classList.add("hidden");
+        },200)
+
+        divBuscar?.classList.add("opacity-100");
+        divBuscar?.classList.remove("opacity-0");
+
+        setTimeout(()=>{
+            divBuscar?.classList.remove("hidden");
+        },200)
+    });
+
+    (async () => {
+        const apiUrl = (import.meta.env.PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+        const token = sessionStorage.getItem('auth_token');
+        const contenedorLista = document.getElementById('lista-rutinas');
+        const ejemploTemplate = document.getElementById('ejemplo');
+        const inputBuscar = document.getElementById('input-buscar') as HTMLInputElement;
+
+        // Función para renderizar las rutinas
+        const renderRutinas = (rutinas: any[]) => {
+            if (!contenedorLista || !ejemploTemplate) return;
+            contenedorLista.innerHTML = '';
+
+            if (rutinas.length === 0) {
+                contenedorLista.innerHTML = `<p class="text-white text-xl col-span-3 text-center">No se encontraron rutinas.</p>`;
+                return;
+            }
+
+            rutinas.forEach((rutina) => {
+                const clone = ejemploTemplate.cloneNode(true) as HTMLElement;
+                clone.removeAttribute('id');
+
+                const userText = rutina.is_system_routine ? 'GIA' : (rutina.user?.username || rutina.user_name || 'Desconocido');
+
+                const elId = clone.querySelector('.card-id');
+                const elNombre = clone.querySelector('.card-nombre');
+                const elUser = clone.querySelector('.card-user');
+
+                if (elId) elId.textContent = rutina.id;
+                if (elNombre) elNombre.textContent = rutina.name || rutina.nombre;
+                if (elUser) elUser.textContent = userText;
+
+                clone.addEventListener('click', async () => {
+                    try {
+                        const url = new URL(`${apiUrl}/v1/rutina/${rutina.id}`);
+
+                        const response = await fetch(url.toString(), {
+                            headers: {
+                                Accept: 'application/json',
+                                Authorization: `Bearer ${token}`,
+                            },
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => null);
+                            throw new Error(errorData?.message ?? `No se pudo obtener la rutina (HTTP ${response.status}).`);
+                        }
+
+                        const resultado = await response.json();
+                        
+                        // Actualizar datos generales de la rutina
+                        const nombreR = document.getElementById("rutina-nombre");
+                        if (nombreR) nombreR.innerText = resultado.name;
+                        
+                        const idR = document.getElementById("idRutina");
+                        if (idR) idR.innerText = `#${resultado.id}`;
+                        
+                        const autorR = document.getElementById('rutina-autor');
+                        if (autorR) {
+                            if (resultado.is_system_routine) {
+                                autorR.innerText = 'GIA';
+                            } else if (resultado.user) {
+                                autorR.innerText = resultado.user.username;
+                            } else {
+                                autorR.innerText = 'Desconocido';
+                            }
+                        }
+
+                        // --- CONFIGURAR EL BOTÓN DE SUSCRIPCIÓN CON EL ID ACTUAL ---
+                        const btnSuscribirse = document.getElementById('btn-suscribirse') as HTMLButtonElement;
+                        if (btnSuscribirse) {
+                            // Limpiamos eventos anteriores clonando el nodo para evitar múltiples ejecuciones acumuladas
+                            const nuevoBtnSuscribirse = btnSuscribirse.cloneNode(true) as HTMLButtonElement;
+                            btnSuscribirse.parentNode?.replaceChild(nuevoBtnSuscribirse, btnSuscribirse);
+
+                            nuevoBtnSuscribirse.addEventListener('click', async () => {
+    try {
+        nuevoBtnSuscribirse.disabled = true;
+        nuevoBtnSuscribirse.innerText = 'Suscribiendo...';
+
+        const subResponse = await fetch(`${apiUrl}/v1/profile/subscribed-routines`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ routine_id: resultado.id })
+        });
+
+        const subResult = await subResponse.json();
+
+        // Si el servidor responde con un error controlado (ej. 409 Ya suscrito)
+        if (!subResponse.ok) {
+            throw new Error(subResult.message || 'Error al procesar la suscripción.');
+        }
+
+        alert(subResult.message || '¡Te has suscrito con éxito!');
+        nuevoBtnSuscribirse.innerText = '¡Suscrito!';
+    } catch (error: any) {
+        console.warn('Aviso de suscripción:', error);
+        alert(error.message || 'Ya estás suscrito a esta rutina.'); // Mensaje amigable
+        nuevoBtnSuscribirse.disabled = false;
+        nuevoBtnSuscribirse.innerText = 'Suscribirse';
+    }
+});
+
+                            // Restaurar texto original por si venía de otra rutina
+                            nuevoBtnSuscribirse.disabled = false;
+                            nuevoBtnSuscribirse.innerText = 'Suscribirse';
+                        }
+
+                        // --- RENDERIZAR DÍAS ---
+                        const ejemploTemplateDias = document.getElementById('ejemplo2');
+                        const contenedorListaDias = document.getElementById('lista-dias');
+
+                        const renderDias = (dias: any[]) => {
+                            if (!contenedorListaDias) {
+                                console.error("❌ Error: No se encontró el elemento con ID 'lista-dias' en el HTML.");
+                                return;
+                            }
+
+                            contenedorListaDias.innerHTML = '';
+
+                            if (!dias || dias.length === 0) {
+                                contenedorListaDias.innerHTML = `<p class="text-white text-xl col-span-3 text-center">Esta rutina no tiene días registrados.</p>`;
+                                return;
+                            }
+
+                            if (!ejemploTemplateDias) {
+                                console.error("❌ Error: No se encontró el template con ID 'ejemplo2' en el HTML.");
+                                return;
+                            }
+
+                            dias.forEach((dia) => {
+                                const cloneDia = ejemploTemplateDias.cloneNode(true) as HTMLElement;
+                                cloneDia.removeAttribute('id');
+                                cloneDia.classList.remove('hidden');
+                                const elIdDia = cloneDia.querySelector('.cardID');
+                                const elNombreDia = cloneDia.querySelector('.cardNombre');
+
+                                if (elIdDia) elIdDia.textContent = dia.id;
+                                if (elNombreDia) elNombreDia.textContent = dia.name;
+
+                                contenedorListaDias.appendChild(cloneDia);
+                            });
+                        };
+
+                        renderDias(resultado.routine_days || []);
+
+                        const divBuscar = document.getElementById('buscar');
+                        divBuscar?.classList.add("opacity-0");
+                        setTimeout(()=>{
+                            divBuscar?.classList.add("hidden");
+                        },500)
+                        const divAnalizar = document.getElementById('analizar');
+                        divAnalizar?.classList.remove("hidden");
+                        setTimeout(()=>{
+                            divAnalizar?.classList.add("opacity-100");
+                        },500)
+
+                    } catch (error) {
+                        console.error('Error al obtener el detalle de la rutina:', error);
+                    }
+                });
+
+                contenedorLista.appendChild(clone);
+            });
+        };
+
+        // Función para consultar la API
+        const fetchRutinas = async (search = '') => {
+            try {
+                const url = new URL(`${apiUrl}/v1/routine`);
+                if (search) url.searchParams.append('search', search);
+
+                const response = await fetch(url.toString(), {
+                    headers: {
+                        Accept: 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
+                    throw new Error(errorData?.message ?? `No se pudieron obtener las rutinas (HTTP ${response.status}).`);
+                }
+
+                const resultado = await response.json();
+                const rutinas = Array.isArray(resultado) ? resultado : (resultado.data || []);
+                renderRutinas(rutinas);
+
+            } catch (error) {
+                console.error('Error al cargar rutinas:', error);
+                if (contenedorLista) {
+                    contenedorLista.innerHTML = `<p class="text-red-400 text-xl col-span-3 text-center">Error al cargar las rutinas.</p>`;
+                }
+            }
+        };
+
+        // Carga inicial
+        await fetchRutinas();
+
+        // Evento de búsqueda con Debounce (espera 300ms tras dejar de escribir)
+        let debounceTimer: NodeJS.Timeout;
+        if (inputBuscar) {
+            inputBuscar.addEventListener('input', (e) => {
+                clearTimeout(debounceTimer);
+                const query = (e.target as HTMLInputElement).value;
+                debounceTimer = setTimeout(() => {
+                    fetchRutinas(query);
+                }, 300);
+            });
+        }
+    })();
+</script>
 </ProtectedLayout>

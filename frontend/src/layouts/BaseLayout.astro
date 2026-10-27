@@ -21,7 +21,7 @@ import '../styles/global.css';
     
     <div class="relative w-full h-screen overflow-scroll scrollbar-none mb-20">
         <header class="absolute bg-secondary z-30 w-full rounded-b-4xl shadow-md shadow-black p-4 md:py-8 md:px-12 flex justify-center items-center">
-            <h1 class="text-white md:text-7xl text-5xl poetsen-one-regular text-center select-none">GIA</h1>
+            <h1 id="tituloGIA" class="text-white md:text-7xl text-5xl poetsen-one-regular text-center select-none hover:translate-y-1 transition ease-in-out duration-300 hover:text-shadow-lg hover:text-shadow-blue hover:cursor-pointer">GIA</h1>
         </header> 
         <div class=" absolute z-20 flex justify-center items-center w-full">
             <nav class=" bg-blue  w-full mx-10 rounded-b-4xl shadow-md shadow-black p-4 md:py-8 md:pb-5 md:px-12 flex justify-center items-center md:mt-30 mt-20 ">
@@ -39,7 +39,12 @@ import '../styles/global.css';
         </div>
     </div>
 
-  
+  <script>
+        const titulo = document.getElementById('tituloGIA');
+        titulo?.addEventListener('click', ()=>{
+            window.location.href = '/dashboard';
+        });
+  </script>
     
 </body>
 </html>
