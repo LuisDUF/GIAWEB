@@ -8,6 +8,9 @@ class ProfileRestDays extends Model
 {
     public $table = 'profile_rest_days';
 
+    public $timestamps = false;
+
+
     public $fillable = [
         'week_day_id'
     ];

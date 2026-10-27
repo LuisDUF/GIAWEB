@@ -1,0 +1,603 @@
+---
+import ProtectedLayout from "../layouts/ProtectedLayout.astro";
+---
+
+<ProtectedLayout>
+    <!-- SECCIÓN 1: Creación de Días y Rutina -->
+    <div id="seccion-creacion-dias">
+        <div class="px-80 justify-center items-center flex pt-20">
+            <div class="bg-secondary rounded-3xl p-10 shadow-black shadow-md flex justify-center items-center w-full">
+                <input class="text-white w-full text-3xl poetsen-one-regular text-center bg-transparent outline-none ring-0 focus:outline-none" type="text" placeholder="Nombre de la rutina" id="nombre-rutina">
+            </div>
+        </div>
+        <div class="px-70 justify-center items-center">
+            <div class="grid grid-cols-2 gap-10 p-10 items-start">    
+                <!-- COLUMNA 1: Contenedor de Tarjetas de Días -->
+                <div id="contenedor-tarjetas" class="flex flex-col gap-10 w-full">
+                    <!-- Tarjeta Base -->
+                    <div class="tarjeta-dia relative pt-6 pb-6 w-full max-w-lg poetsen-one-regular select-none">
+                        
+                        <!-- Pestaña Superior: Nombre -->
+                        <div class="absolute top-0 left-0 right-0 flex justify-center z-0">
+                            <div class="bg-[#00a8ab] text-white text-sm px-10 py-1 rounded-t-xl min-w-[140px] text-center shadow-sm">
+                                Nombre
+                            </div>
+                        </div>
+
+                        <!-- Cuerpo Principal de la Tarjeta Oscura -->
+                        <div class="relative z-10 bg-secondary text-white rounded-2xl p-6 shadow-xl shadow-black/40 border border-secondary flex flex-col items-center gap-6">
+                            
+                            <!-- Input de Nombre del Día -->
+                            <input type="text" placeholder="Nombre del día" class="input-nombre-dia text-3xl font-black tracking-wide text-white text-center bg-transparent outline-none ring-0 focus:outline-none w-full">
+
+                            <!-- Grid de Botones de Músculos -->
+                            <div class="grid grid-cols-4 gap-3 w-full">
+                                <button type="button" data-musculo="Pectoral" class="btn-musculo bg-blue hover:cursor-pointer hover:-translate-y-1 shadow-black text-white py-2 px-3 rounded-xl text-center text-sm shadow-md transition-all">Pectoral</button>
+                                <button type="button" data-musculo="Espalda" class="btn-musculo bg-blue hover:cursor-pointer hover:-translate-y-1 shadow-black text-white py-2 px-3 rounded-xl text-center text-sm shadow-md transition-all">Espalda</button>
+                                <button type="button" data-musculo="Triceps" class="btn-musculo bg-blue hover:cursor-pointer hover:-translate-y-1 shadow-black text-white py-2 px-3 rounded-xl text-center text-sm shadow-md transition-all">Triceps</button>
+                                <button type="button" data-musculo="Biceps" class="btn-musculo bg-blue hover:cursor-pointer hover:-translate-y-1 shadow-black text-white py-2 px-3 rounded-xl text-center text-sm shadow-md transition-all">Biceps</button>
+
+                                <button type="button" data-musculo="Hombro" class="btn-musculo bg-blue hover:cursor-pointer hover:-translate-y-1 shadow-black text-white py-2 px-3 rounded-xl text-center text-sm shadow-md transition-all">Hombro</button>
+                                <button type="button" data-musculo="Pierna" class="btn-musculo bg-blue hover:cursor-pointer hover:-translate-y-1 shadow-black text-white py-2 px-3 rounded-xl text-center text-sm shadow-md transition-all">Pierna</button>
+                                <button type="button" data-musculo="Abdomen" class="btn-musculo bg-blue hover:cursor-pointer hover:-translate-y-1 shadow-black text-white py-2 px-3 rounded-xl text-center text-sm shadow-md transition-all">Abdomen</button>
+                                <button type="button" data-musculo="Antebrazo" class="btn-musculo bg-blue hover:cursor-pointer hover:-translate-y-1 shadow-black text-white py-2 px-3 rounded-xl text-center text-sm shadow-md transition-all">Antebrazo</button>
+                            </div>
+
+                        </div>
+
+                        <!-- Pestaña Inferior: Eliminar -->
+                        <div class="absolute bottom-0 left-0 right-0 flex justify-center z-0">
+                            <div class="btn-eliminar bg-red-700 text-white text-sm px-12 py-1 rounded-b-xl min-w-[140px] text-center shadow-sm hover:bg-red-800 cursor-pointer transition-colors">
+                                Eliminar
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- COLUMNA 2: Botones de Acción -->
+                <div class="flex flex-col justify-center items-center gap-6 h-full sticky top-20">
+                    <button id="btn-nuevo-dia" class="bg-blue text-white text-2xl poetsen-one-regular px-10 py-5 rounded-3xl shadow-lg shadow-black/30 hover:-translate-y-1 transition-all w-full max-w-xs text-center cursor-pointer">
+                        Nuevo día
+                    </button>
+                    
+                    <button id="btn-siguiente" class="bg-blue hover:bg-green duration-500 text-white text-2xl poetsen-one-regular px-10 py-5 rounded-3xl shadow-lg shadow-black/30 hover:-translate-y-1 transition-all w-full max-w-xs text-center cursor-pointer">
+                        Siguiente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 2: Selección de Ejercicios y Visor 3D -->
+    <div id="seccion-seleccion-ejercicios" class="hidden pt-0 pb-20 px-10">
+        <!-- SE AÑADIÓ EL ID id="btn-volver" AQUÍ -->
+        <div id="btn-volver" class="absolute bg-blue p-2 poetsen-one-regular text-white z-99 rounded shadow-black shadow-md hover:cursor-pointer select-none">
+            Volver
+        </div>
+        <div class="grid grid-cols-2 gap-10 items-center max-w-7xl mx-auto">
+            
+            <!-- COLUMNA IZQUIERDA: Tarjeta 3D (oculta hasta seleccionar un ejercicio) -->
+            <div id="contenedor-visor-3d" class="relative my-8 w-full max-w-lg poetsen-one-regular select-none justify-self-center hidden">
+                <div class="absolute -top-10 left-0 right-0 flex justify-center z-20">
+                    <div class="bg-[#00a8ab] text-white text-xl px-12 py-2 rounded-t-2xl min-w-[200px] text-center shadow-lg">
+                        Ejercicio
+                    </div>
+                </div>
+
+                <div class="relative z-10 bg-secondary text-white rounded-3xl p-6 pt-8 shadow-2xl shadow-black/50 border border-secondary flex flex-col items-center gap-4">
+                    <!-- Cambiado de bg-white a bg-neutral-900 para que resalte el modelo -->
+                    <div id="canvas-container" class="w-full h-[400px] bg-neutral-900 rounded-2xl shadow-inner overflow-hidden relative flex items-center justify-center">
+                        <p id="3d-loading" class="text-gray-300 text-lg absolute">Selecciona un ejercicio...</p>
+                    </div>
+                    <h3 id="nombre-ejercicio-seleccionado" class="text-2xl font-black text-center text-gray-200">Ningún ejercicio seleccionado</h3>
+                </div>
+
+                <div class="absolute -bottom-13 left-0 right-0 flex justify-center z-20">
+                    <button id="btn-siguiente-dia" class="bg-[#00a8ab] hover:bg-green duration-300 text-white text-lg px-16 py-3 rounded-b-2xl min-w-[220px] text-center shadow-lg cursor-pointer transition-all">
+                        Siguiente día
+                    </button>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: Buscador y Lista de Ejercicios -->
+            <div class="relative my-8 mb-0 w-full max-w-lg poetsen-one-regular select-none justify-self-center">
+                <div class="absolute -top-10 left-0 right-0 flex justify-center z-20">
+                    <div id="titulo-dia-actual" class="bg-[#00a8ab] text-white text-xl px-12 py-2 rounded-t-2xl min-w-[200px] text-center shadow-lg">
+                        Día 1
+                    </div>
+                </div>
+
+                <div class="relative z-10 bg-secondary text-white rounded-3xl p-6 pb-8 pt-8 shadow-2xl shadow-black/50 border border-secondary flex flex-col gap-6">
+                    <div class="flex items-center gap-3 border-b border-gray-500 pb-3 mt-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.34-4.34"/></svg>
+                        <input id="input-buscar-ejercicio" type="text" placeholder="Buscar ejercicio..." class="w-full bg-transparent text-white text-xl outline-none ring-0 focus:outline-none">
+                    </div>
+
+                    <div id="contenedor-tabs-musculos" class="flex gap-3 overflow-x-auto pb-2">
+                        <!-- Dinámico -->
+                    </div>
+
+                    <div id="lista-ejercicios-grid" class=" flex flex-col gap-3 min-h-[300px] max-h-[350px] overflow-y-auto py-2 pb-6 pr-2 scrollbar-thin scrollbar-thumb-blue">
+                        <!-- Dinámico -->
+                    </div>
+                </div>
+
+                <div class="absolute -bottom-8 left-0 right-0 flex justify-center z-20">
+                    <div class="bg-transparent text-transparent text-lg px-16 py-3 rounded-b-2xl min-w-[220px] text-center">
+                        Spacer
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { Timer } from 'three/addons/misc/Timer.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const apiUrl = (import.meta.env.PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+        const token = sessionStorage.getItem('auth_token');
+
+        const contenedorTarjetas = document.getElementById('contenedor-tarjetas');
+        const btnNuevoDia = document.getElementById('btn-nuevo-dia');
+        const btnSiguiente = document.getElementById('btn-siguiente');
+        const inputNombreRutina = document.getElementById('nombre-rutina');
+
+        const seccionCreacion = document.getElementById('seccion-creacion-dias');
+        const seccionEjercicios = document.getElementById('seccion-seleccion-ejercicios');
+        const inputBuscarEjercicio = document.getElementById('input-buscar-ejercicio');
+        
+        const btnVolver = document.getElementById('btn-volver');
+
+        const muscleMap = {
+            'pectoral': 1, 'pecho': 1,
+            'espalda': 2, 
+            'pierna': 3, 
+            'triceps': 4, 
+            'biceps': 5, 
+            'hombro': 6, 
+            'abdomen': 7, 
+            'antebrazo': 8
+        };
+
+        const allowedVisibleParts = [
+            "cabeza", "torso", "shorts", 
+            "brazo2", "pierna2", "pantorrilla2", 
+            "pies", "rodilla", "mano",
+            "ojos1", "nariz", "orejas", "pelo",
+        ];
+
+        let diasDataGlobal = [];
+        let rutinaNombreGlobal = '';
+        let indiceDiaActual = 0;
+        let ejerciciosCache = {};
+        let ejerciciosActualesCache = [];
+        let muscleIdActualActivo = null;
+
+        let scene, camera, renderer, model3D, mixer;
+        let ejercicioPendiente3D = null;
+        let timer = new Timer();
+        let animationsMap = new Map();
+
+        function initThreeViewer() {
+            const container = document.getElementById('canvas-container');
+            if (!container) return;
+
+            if (renderer) {
+                const width = container.clientWidth || 400;
+                const height = container.clientHeight || 400;
+                renderer.setSize(width, height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                return;
+            }
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1d24);
+
+            const width = container.clientWidth || 400;
+            const height = container.clientHeight || 400;
+
+            camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+            
+            const distance = 15; 
+            const angle = Math.PI / 4; 
+
+            camera.position.set(
+                Math.sin(angle) * distance, 
+                20,                         
+                Math.cos(angle) * distance  
+            );
+
+            camera.lookAt(0, 0, 0); 
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
+            scene.add(ambientLight);
+
+            const dirLight1 = new THREE.DirectionalLight(0xffffff, 2.5);
+            dirLight1.position.set(5, 10, 7);
+            scene.add(dirLight1);
+
+            const dirLight2 = new THREE.DirectionalLight(0xffffff, 1.5);
+            dirLight2.position.set(-5, -5, -5);
+            scene.add(dirLight2);
+
+            const loader = new GLTFLoader();
+            loader.load('/assets/simple.glb', (gltf) => {
+                model3D = gltf.scene;
+                scene.add(model3D);
+
+                const box = new THREE.Box3().setFromObject(model3D);
+                const center = box.getCenter(new THREE.Vector3());
+                model3D.position.sub(center);
+
+                model3D.traverse((child) => {
+                    const nameLower = child.name.toLowerCase();
+                    const esPermitido =
+                        nameLower !== "abspies" &&
+                        allowedVisibleParts.some(
+                            part => nameLower.includes(part)
+                        );                    
+                    if (esPermitido) {
+                        let current = child;
+                        while (current && current !== model3D) {
+                            current.visible = true;
+                            current = current.parent;
+                        }
+                    }
+                });
+
+                if (gltf.animations && gltf.animations.length > 0) {
+                    mixer = new THREE.AnimationMixer(model3D);
+                    gltf.animations.forEach((clip) => {
+                        animationsMap.set(clip.name.toLowerCase(), clip);
+                    });
+                }
+
+                document.getElementById('3d-loading')?.remove();
+
+                if (ejercicioPendiente3D) {
+                    actualizarModelo3D(ejercicioPendiente3D);
+                    ejercicioPendiente3D = null;
+                }
+            }, undefined, (error) => {
+                console.error('Error cargando modelo 3D:', error);
+            });
+
+            function animate() {
+                requestAnimationFrame(animate);
+                timer.update();
+                const delta = timer.getDelta();
+                if (mixer) mixer.update(delta);
+                if (renderer && scene && camera) renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        function actualizarModelo3D(exercise) {
+            if (!model3D) return;
+
+            const maquinaName = String(exercise.maquina ?? "").toLowerCase().trim();
+
+            function coincideEnJerarquia(obj, nombres) {
+                let actual = obj;
+                while (actual && actual !== model3D) {
+                    const nombre = actual.name.toLowerCase();
+                    if (nombre === "abspies") return false;
+                    if (nombres.some(n => nombre.includes(n))) return true;
+                    actual = actual.parent;
+                }
+                return false;
+            }
+
+            model3D.traverse(child => {
+                child.visible = child.name.toLowerCase() !== "abspies";
+            });
+
+            model3D.traverse(child => {
+                if (!child.isMesh) return;
+
+                const esCuerpo = coincideEnJerarquia(child, allowedVisibleParts);
+                const esMaquina = maquinaName && coincideEnJerarquia(child, [maquinaName]);
+                const esAsiento = exercise.con_asiento && coincideEnJerarquia(child, ["silla", "asiento"]);
+                const esRespaldo = exercise.con_respaldo && coincideEnJerarquia(child, ["respaldo"]);
+
+                child.visible = Boolean(esCuerpo || esMaquina || esAsiento || esRespaldo);
+
+                if (child.visible) {
+                    let padre = child.parent;
+                    while (padre && padre !== model3D) {
+                        if (padre.name.toLowerCase() === "abspies") break;
+                        padre.visible = true;
+                        padre = padre.parent;
+                    }
+                }
+            });
+
+            if (mixer) {
+                mixer.stopAllAction();
+                if (exercise.animacion) {
+                    const animClip = animationsMap.get(String(exercise.animacion).toLowerCase());
+                    if (animClip) {
+                        mixer.clipAction(animClip).reset().play();
+                    }
+                }
+            }
+        }
+
+        contenedorTarjetas?.addEventListener('click', (e) => {
+            const target = e.target;
+            if (target.classList.contains('btn-musculo')) {
+                if (target.classList.contains('bg-blue')) {
+                    target.classList.remove('bg-blue');
+                    target.classList.add('bg-primary');
+                } else {
+                    target.classList.remove('bg-primary');
+                    target.classList.add('bg-blue');
+                }
+            }
+            if (target.classList.contains('btn-eliminar')) {
+                const tarjeta = target.closest('.tarjeta-dia');
+                if (contenedorTarjetas.querySelectorAll('.tarjeta-dia').length > 1) {
+                    tarjeta?.remove();
+                } else {
+                    alert('Debes mantener al menos un día.');
+                }
+            }
+        });
+
+        btnNuevoDia?.addEventListener('click', () => {
+            const tarjetas = contenedorTarjetas?.querySelectorAll('.tarjeta-dia');
+            const ultimaTarjeta = tarjetas[tarjetas.length - 1];
+            const inputNombreDia = ultimaTarjeta.querySelector('.input-nombre-dia');
+            if (!inputNombreDia.value.trim()) {
+                alert('Ingresa el nombre del día actual.');
+                return;
+            }
+            if (ultimaTarjeta.querySelectorAll('.btn-musculo.bg-primary').length === 0) {
+                alert('Selecciona al menos un músculo.');
+                return;
+            }
+            const nuevaTarjeta = tarjetas[0].cloneNode(true);
+            nuevaTarjeta.querySelector('.input-nombre-dia').value = '';
+            nuevaTarjeta.querySelectorAll('.btn-musculo').forEach(b => {
+                b.classList.remove('bg-primary');
+                b.classList.add('bg-blue');
+            });
+            contenedorTarjetas?.appendChild(nuevaTarjeta);
+        });
+
+        btnSiguiente?.addEventListener('click', () => {
+            rutinaNombreGlobal = inputNombreRutina.value.trim();
+            if (!rutinaNombreGlobal) {
+                alert('Asigna un nombre a la rutina.');
+                return;
+            }
+
+            const tarjetas = contenedorTarjetas?.querySelectorAll('.tarjeta-dia');
+            diasDataGlobal = [];
+            let isValid = true;
+
+            tarjetas?.forEach((tarjeta, index) => {
+                const nombreDia = tarjeta.querySelector('.input-nombre-dia').value.trim();
+                const musculos = [];
+                
+                tarjeta.querySelectorAll('.btn-musculo.bg-primary').forEach(b => {
+                    const name = b.getAttribute('data-musculo');
+                    const lowerKey = name ? name.toLowerCase() : '';
+                    const mappedId = muscleMap[lowerKey];
+
+                    if (mappedId) {
+                        musculos.push({ name, id: mappedId });
+                    }
+                });
+
+                if (!nombreDia || musculos.length === 0) {
+                    isValid = false;
+                    alert(`El día #${index + 1} está incompleto o sin músculos válidos seleccionados.`);
+                    return;
+                }
+                // Inicializamos la estructura incluyendo el arreglo de ejercicios vacío
+                diasDataGlobal.push({ day_order: index + 1, name: nombreDia, muscles: musculos, exercises: [] });
+            });
+
+            if (!isValid) return;
+
+            seccionCreacion?.classList.add('hidden');
+            seccionEjercicios?.classList.remove('hidden');
+
+            indiceDiaActual = 0;
+            cargarDiaEnVistaEjercicios(indiceDiaActual);
+        });
+
+        btnVolver?.addEventListener('click', () => {
+            seccionEjercicios?.classList.add('hidden');
+            seccionCreacion?.classList.remove('hidden');
+        });
+
+        async function cargarDiaEnVistaEjercicios(index) {
+            if (index >= diasDataGlobal.length) {
+                return;
+            }
+
+            const dia = diasDataGlobal[index];
+            document.getElementById('titulo-dia-actual').innerText = dia.name;
+            const contenedorTabs = document.getElementById('contenedor-tabs-musculos');
+            contenedorTabs.innerHTML = '';
+            inputBuscarEjercicio.value = '';
+
+            let primerId = null;
+            dia.muscles.forEach((m, idx) => {
+                if (idx === 0) primerId = m.id;
+                const tabBtn = document.createElement('button');
+                tabBtn.type = 'button';
+                tabBtn.className = `px-5 py-2 rounded-xl text-md poetsen-one-regular cursor-pointer transition-all ${idx === 0 ? 'bg-primary text-white shadow-md' : 'bg-[#383d46] text-gray-300 hover:bg-gray-600'}`;
+                tabBtn.innerText = m.name;
+                tabBtn.addEventListener('click', () => {
+                    contenedorTabs.querySelectorAll('button').forEach(b => {
+                        b.classList.remove('bg-primary', 'shadow-md');
+                        b.classList.add('bg-[#383d46]', 'text-gray-300');
+                    });
+                    tabBtn.classList.remove('bg-[#383d46]', 'text-gray-300');
+                    tabBtn.classList.add('bg-primary', 'shadow-md');
+                    inputBuscarEjercicio.value = '';
+                    fetchEjerciciosPorMusculo(m.id);
+                });
+                contenedorTabs.appendChild(tabBtn);
+            });
+
+            if (primerId !== null && primerId !== undefined) {
+                await fetchEjerciciosPorMusculo(primerId);
+            }
+        }
+
+        async function fetchEjerciciosPorMusculo(muscleId) {
+            if (!muscleId || muscleId === 'undefined') return;
+
+            muscleIdActualActivo = muscleId;
+            const contenedor = document.getElementById('lista-ejercicios-grid');
+            contenedor.innerHTML = `<p class="text-gray-400 text-center py-4">Cargando...</p>`;
+
+            try {
+                if (!ejerciciosCache[muscleId]) {
+                    const res = await fetch(`${apiUrl}/v1/muscle-groups/${muscleId}/exercises`, {
+                        headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+                    });
+                    const json = await res.json();
+                    ejerciciosCache[muscleId] = Array.isArray(json) ? json : (json.data || []);
+                }
+                ejerciciosActualesCache = ejerciciosCache[muscleId];
+                renderizarEjercicios(ejerciciosActualesCache);
+            } catch (err) {
+                console.error(err);
+                contenedor.innerHTML = `<p class="text-red-400 text-center py-4">Error al cargar ejercicios.</p>`;
+            }
+        }
+
+        function renderizarEjercicios(ejercicios) {
+            const contenedor = document.getElementById('lista-ejercicios-grid');
+            contenedor.innerHTML = '';
+
+            if (ejercicios.length === 0) {
+                contenedor.innerHTML = `<p class="text-gray-400 text-center py-4">No hay ejercicios.</p>`;
+                return;
+            }
+
+            const diaActual = diasDataGlobal[indiceDiaActual];
+
+            ejercicios.forEach(ej => {
+                const nombre = ej.name || ej.nombre || '';
+                const ejercicioId = ej.id; // Asegúrate de que tu API devuelva 'id' en el objeto del ejercicio
+
+                // Verificamos si este ejercicio ya está seleccionado en el día actual
+                const estaSeleccionado = diaActual.exercises.some(ex => ex.id === ejercicioId);
+
+                const item = document.createElement('div');
+                // Si ya está seleccionado, aplica 'bg-blue', de lo contrario el color por defecto
+                item.className = `text-white text-lg font-medium py-3 px-4 rounded-xl cursor-pointer transition-all shadow-sm ${estaSeleccionado ? 'bg-blue' : 'bg-[#383d46] hover:bg-primary'}`;
+                item.innerText = nombre;
+                
+                item.addEventListener('click', () => {
+                    // 1. Alternar almacenamiento en el día actual
+                    const indexEnDia = diaActual.exercises.findIndex(ex => ex.id === ejercicioId);
+                    
+                    if (indexEnDia > -1) {
+                        // Si ya estaba, lo quitamos y cambiamos el estilo
+                        diaActual.exercises.splice(indexEnDia, 1);
+                        item.classList.remove('bg-blue');
+                        item.classList.add('bg-[#383d46]');
+                    } else {
+                        // Si no estaba, lo agregamos (guardando ID y referencia al día) y cambiamos estilo a bg-blue
+                        diaActual.exercises.push({
+                            id: ejercicioId,
+                            name: nombre,
+                            day_order: diaActual.day_order,
+                            day_name: diaActual.name
+                        });
+                        item.classList.remove('bg-[#383d46]', 'hover:bg-primary');
+                        item.classList.add('bg-blue');
+                    }
+
+                    // 2. Visualizador 3D
+                    document.getElementById('nombre-ejercicio-seleccionado').innerText = nombre;
+                    const visor3D = document.getElementById('contenedor-visor-3d');
+                    visor3D?.classList.remove('hidden');
+
+                    if (!renderer) {
+                        initThreeViewer();
+                    }
+
+                    ejercicioPendiente3D = ej;
+                    if (model3D) {
+                        actualizarModelo3D(ej);
+                        ejercicioPendiente3D = null;
+                    }
+                });
+
+                contenedor.appendChild(item);
+            });
+        }
+
+        inputBuscarEjercicio?.addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase().trim();
+            const filtrados = ejerciciosActualesCache.filter(ej => (ej.name || ej.nombre || '').toLowerCase().includes(q));
+            renderizarEjercicios(filtrados);
+        });
+
+document.getElementById('btn-siguiente-dia')?.addEventListener('click', async () => {
+    if (diasDataGlobal[indiceDiaActual].exercises.length === 0) {
+        alert('Selecciona al menos un ejercicio para este día antes de continuar.');
+        return;
+    }
+
+    indiceDiaActual++;
+
+    if (indiceDiaActual < diasDataGlobal.length) {
+        cargarDiaEnVistaEjercicios(indiceDiaActual);
+    } else {
+        // Llegamos al último día: Construir payload y enviar al endpoint
+        const payloadFinal = {
+            rutina_name: rutinaNombreGlobal,
+            routine_days: diasDataGlobal
+        };
+
+      try {
+            const response = await fetch(`${apiUrl}/v1/routine`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payloadFinal)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // Efa gore e bontšhe molaetsa wa kgonthe wa phošo le fa e lefile/line efe
+                console.error("Detalle del error del servidor:", data);
+                throw new Error(data.error ? `${data.error} (Fila: ${data.line})` : (data.message || 'Error al guardar la rutina.'));
+            }
+
+            alert('¡Rutina creada y registrada exitosamente!');
+            window.location.href = '/dashboard';
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Phōšō: ' + error.message);
+        }
+    }
+});
+    });
+</script>
+</ProtectedLayout>

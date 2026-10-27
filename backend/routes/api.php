@@ -3,11 +3,12 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\V1\WorkoutSessionController;
-use App\Http\Controllers\Api\SessionExerciseController;
+use App\Http\Controllers\Api\V1\SessionExerciseController;
 use App\Http\Controllers\Api\V1\RoutineDayController;
 use App\Http\Controllers\API\V1\AuthController;
 use App\Http\Controllers\API\V1\UserRoutineSubscriptionController;
 use App\Http\Controllers\API\V1\RoutineController;
+use App\Http\Controllers\API\V1\ExerciseController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -20,15 +21,20 @@ Route::post('/register', [AuthController::class, 'register']);
 
 // Grupo protegido con Sanctum y prefijo v1
 Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
+        Route::get('/routine/{id}', [RoutineDayController::class, 'show']);
+    Route::apiResource('routine', RoutineController::class);
+
+
+    Route::get('/muscle-groups/{muscleGroupId}/exercises', [ExerciseController::class, 'getByMuscleGroup']);
+
 
     Route::get('/rutina/{id}', [RoutineController::class, 'show']);
 
     // Rutinas
-    Route::get('/routine/{id}', [RoutineDayController::class, 'show']);
+
 
     // Session Exercises Resource
     Route::apiResource('session-exercises', SessionExerciseController::class);
-    Route::apiResource('routine', RoutineController::class);
 
     // Suscripción a rutinas
 

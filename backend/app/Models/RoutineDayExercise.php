@@ -8,6 +8,8 @@ class RoutineDayExercise extends Model
 {
     public $table = 'routine_day_exercises';
 
+       public $timestamps = false;
+
     public $fillable = [
         'routine_day_id',
         'exercise_id',
