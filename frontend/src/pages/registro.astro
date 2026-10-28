@@ -12,6 +12,7 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
         <div class="w-full px-10 ">
             <div class="bg-secondary rounded-3xl overflow-x-auto scrollbar-thumb-blue shadow-inner shadow-black ">
                 <div id="tabla-ejercicios" class="p-10 select-none py-4 gap-6 rounded-3xl grid grid-flow-col grid-rows-1 w-max"></div>
+
             </div>
         </div>
 
@@ -85,6 +86,10 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
 <script>
     const apiUrl = (import.meta.env.PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api')
         .replace(/\/$/, '');
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { Timer } from 'three/addons/misc/Timer.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
     type EjercicioRutina = {
         exercise_id: number;
@@ -117,7 +122,19 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
         session_exercises?: EjercicioRegistrado[] | null;
     };
 
-    let tiempoInicio = Date.now();
+    // 3D viewer globals
+let scene, camera, renderer, model3D, mixer;
+let ejercicioPendiente3D = null;
+const timer = new Timer();
+const animationsMap = new Map();
+const allowedVisibleParts = [
+    "cabeza", "torso", "shorts",
+    "brazo2", "pierna2", "pantorrilla2",
+    "pies", "rodilla", "mano",
+    "ojos1", "nariz", "orejas", "pelo",
+];
+
+let tiempoInicio = Date.now();
     const urlParams = new URLSearchParams(window.location.search);
     const idR = urlParams.get('idR') || urlParams.get('idr');
     const idSession = urlParams.get('id');
@@ -384,6 +401,15 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
 
               guardarEjercicioActual();
               mostrarEjercicio(indice);
+              // Initialise the 3D viewer (first click creates the scene)
+              const ejercicio = ejercicios[indice];
+              if (ejercicio) {
+                  ejercicioPendiente3D = ejercicio;
+                  initThreeViewer();
+                  actualizarModelo3D(ejercicio);
+                  const visor = document.getElementById('contenedor-visor-3d');
+                  if (visor) visor.classList.remove('hidden');
+              }
         });
     });
 
@@ -476,6 +502,15 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
 
       if (ejercicios.length > 0) {
           mostrarEjercicio(0);
+          // Also initialise the 3D viewer with the first exercise
+          const primerEjercicio = ejercicios[0];
+          if (primerEjercicio) {
+              ejercicioPendiente3D = primerEjercicio;
+              initThreeViewer();
+              actualizarModelo3D(primerEjercicio);
+              const visor = document.getElementById('contenedor-visor-3d');
+              if (visor) visor.classList.remove('hidden');
+          }
       }
   }
 
@@ -564,5 +599,165 @@ import ProtectedLayout from "../layouts/ProtectedLayout.astro";
     void cargarRegistro().catch((error) => {
         console.error('Error al cargar el registro:', error);
     });
+
+    // ---- 3D Viewer Functions ----
+    function initThreeViewer() {
+        const container = document.getElementById('canvas-container');
+        if (!container) return;
+
+        if (renderer) {
+            const width = container.clientWidth || 400;
+            const height = container.clientHeight || 400;
+            renderer.setSize(width, height);
+            if (camera) {
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
+            return;
+        }
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1d24);
+
+        const width = container.clientWidth || 400;
+        const height = container.clientHeight || 400;
+
+        camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+        const distance = 15;
+        const angle = Math.PI / 4;
+        camera.position.set(
+            Math.sin(angle) * distance,
+            20,
+            Math.cos(angle) * distance
+        );
+        camera.lookAt(0, 0, 0);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
+        scene.add(ambientLight);
+
+        const dirLight1 = new THREE.DirectionalLight(0xffffff, 2.5);
+        dirLight1.position.set(5, 10, 7);
+        scene.add(dirLight1);
+
+        const dirLight2 = new THREE.DirectionalLight(0xffffff, 1.5);
+        dirLight2.position.set(-5, -5, -5);
+        scene.add(dirLight2);
+
+        const loader = new GLTFLoader();
+        loader.load('/assets/simple.glb', (gltf) => {
+            model3D = gltf.scene;
+            scene.add(model3D);
+
+            const box = new THREE.Box3().setFromObject(model3D);
+            const center = box.getCenter(new THREE.Vector3());
+            model3D.position.sub(center);
+
+            model3D.traverse((child) => {
+                const nameLower = child.name.toLowerCase();
+                const esPermitido =
+                    nameLower !== "abspies" &&
+                    allowedVisibleParts.some(part => nameLower.includes(part));
+                if (esPermitido) {
+                    let current = child;
+                    while (current && current !== model3D) {
+                        current.visible = true;
+                        current = current.parent;
+                    }
+                }
+            });
+
+            if (gltf.animations && gltf.animations.length > 0) {
+                mixer = new THREE.AnimationMixer(model3D);
+                gltf.animations.forEach((clip) => {
+                    animationsMap.set(clip.name.toLowerCase(), clip);
+                });
+            }
+
+            document.getElementById('3d-loading')?.remove();
+
+            if (ejercicioPendiente3D) {
+                actualizarModelo3D(ejercicioPendiente3D);
+                ejercicioPendiente3D = null;
+            }
+        }, undefined, (error) => {
+            console.error('Error cargando modelo 3D:', error);
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            timer.update();
+            const delta = timer.getDelta();
+            if (mixer) mixer.update(delta);
+            if (renderer && scene && camera) renderer.render(scene, camera);
+        }
+        animate();
+    }
+
+    function actualizarModelo3D(routineDayExercise) {
+        if (!model3D) return;
+        // The data comes as a RoutineDayExercise; the actual Exercise fields
+        // (animacion, maquina, con_asiento, con_respaldo) are in .exercise
+        const exercise = routineDayExercise.exercise ?? routineDayExercise;
+        const maquinaName = String(exercise.maquina ?? "").toLowerCase().trim();
+
+        // Update the exercise name label in the viewer
+        const nombreLabel = document.getElementById('nombre-ejercicio-seleccionado');
+        if (nombreLabel) {
+            nombreLabel.textContent = exercise.name ?? 'Ejercicio';
+        }
+
+        function coincideEnJerarquia(obj, nombres) {
+            let actual = obj;
+            while (actual && actual !== model3D) {
+                const nombre = actual.name.toLowerCase();
+                if (nombre === "abspies") return false;
+                if (nombres.some(n => nombre.includes(n))) return true;
+                actual = actual.parent;
+            }
+            return false;
+        }
+
+        model3D.traverse(child => {
+            child.visible = child.name.toLowerCase() !== "abspies";
+        });
+
+        model3D.traverse(child => {
+            if (!child.isMesh) return;
+
+            const esCuerpo = coincideEnJerarquia(child, allowedVisibleParts);
+            const esMaquina = maquinaName && coincideEnJerarquia(child, [maquinaName]);
+            const esAsiento = exercise.con_asiento && coincideEnJerarquia(child, ["silla", "asiento"]);
+            const esRespaldo = exercise.con_respaldo && coincideEnJerarquia(child, ["respaldo"]);
+
+            child.visible = Boolean(esCuerpo || esMaquina || esAsiento || esRespaldo);
+
+            if (child.visible) {
+                let padre = child.parent;
+                while (padre && padre !== model3D) {
+                    if (padre.name.toLowerCase() === "abspies") break;
+                    padre.visible = true;
+                    padre = padre.parent;
+                }
+            }
+        });
+
+        if (mixer) {
+            mixer.stopAllAction();
+            if (exercise.animacion) {
+                const animClip = animationsMap.get(String(exercise.animacion).toLowerCase());
+                if (animClip) {
+                    mixer.clipAction(animClip).reset().play();
+                } else {
+                    console.warn('Animación no encontrada en el mapa:', exercise.animacion);
+                }
+            }
+        }
+    }
+
 </script>
 </ProtectedLayout>

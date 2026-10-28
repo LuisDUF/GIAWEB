@@ -9,6 +9,7 @@ use App\Http\Controllers\API\V1\AuthController;
 use App\Http\Controllers\API\V1\UserRoutineSubscriptionController;
 use App\Http\Controllers\API\V1\RoutineController;
 use App\Http\Controllers\API\V1\ExerciseController;
+use App\Models\ActivityLog;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -62,9 +63,29 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::get('/profile/subscribed-routines', [UserRoutineSubscriptionController::class, 'getSubscribedRoutines']);
     Route::post('/profile/subscribed-routines', [UserRoutineSubscriptionController::class, 'store']);
 
+    Route::get('/activity-logs', function () {
+    return response()->json(ActivityLog::latest()->take(20)->get());
+});
+
 });
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [\App\Http\Controllers\API\V1\AuthController::class, 'logout']);
     Route::get('/user', [\App\Http\Controllers\API\V1\AuthController::class, 'user']);
 });
+
+// Rutas exclusivas de administrador
+Route::middleware(['auth:sanctum', 'is_admin'])->prefix('v1/admin')->group(function () {
+    // Gestión de rutinas
+    Route::get('/routines',          [\App\Http\Controllers\API\V1\Admin\AdminRoutineController::class, 'index']);
+    Route::get('/routines/{id}',     [\App\Http\Controllers\API\V1\Admin\AdminRoutineController::class, 'show']);
+    Route::put('/routines/{id}',     [\App\Http\Controllers\API\V1\Admin\AdminRoutineController::class, 'update']);
+    Route::delete('/routines/{id}',  [\App\Http\Controllers\API\V1\Admin\AdminRoutineController::class, 'destroy']);
+
+    // Gestión de ejercicios
+    Route::get('/exercises',         [\App\Http\Controllers\API\V1\Admin\AdminExerciseController::class, 'index']);
+    Route::put('/exercises/{id}',    [\App\Http\Controllers\API\V1\Admin\AdminExerciseController::class, 'update']);
+    Route::delete('/exercises/{id}', [\App\Http\Controllers\API\V1\Admin\AdminExerciseController::class, 'destroy']);
+    Route::get('/muscle-groups',     [\App\Http\Controllers\API\V1\Admin\AdminExerciseController::class, 'muscleGroups']);
+});
+

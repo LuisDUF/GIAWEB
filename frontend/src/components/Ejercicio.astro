@@ -5,8 +5,10 @@ const { titulo, class: className = '', subtitulo } = Astro.props;
 
 ---
 
-<div class="w-full grid justify-center">
-    <div id="modelo-3d">
-        model
+
+    <div id="contenedor-visor-3d" class="relative rounded w-full max-w-lg poetsen-one-regular select-none justify-self-center hidden">
+            <p id="3d-loading" class="text-gray-300 text-lg absolute">Cargando modelo...</p>
+            <div id="canvas-container" class="w-full h-[400px] bg-secondary rounded-2xl shadow-inner overflow-hidden relative flex items-center justify-center"></div>
+            <h3 id="nombre-ejercicio-seleccionado" class="hidden text-2xl font-black text-center text-gray-200">Ningún ejercicio seleccionado</h3>
+        
     </div>
-</div>

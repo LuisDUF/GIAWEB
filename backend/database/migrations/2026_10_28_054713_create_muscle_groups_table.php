@@ -9,20 +9,20 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-public function up(): void
-{
-    Schema::table('session_sets', function (Blueprint $table) {
-        $table->decimal('rpe', 3, 1)->nullable()->change(); // Permite valores como 8.5
-    });
-}
+    public function up(): void
+    {
+        Schema::create('muscle_groups', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique();
+            $table->timestamps();
+        });
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('session_sets', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('muscle_groups');
     }
 };

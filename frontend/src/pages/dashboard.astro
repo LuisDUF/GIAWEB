@@ -117,6 +117,11 @@ import Racha from "../components/analiticas/Racha.astro";
 
 <script>
 
+let btnIrCrear = document.getElementById('btn-ir-crear');
+btnIrCrear?.addEventListener('click',()=>{
+    window.location.href = '/nueva-rutina';
+})  ;  
+
 let btnIrRutina = document.getElementById('btn-ir-rutinas');
 btnIrRutina?.addEventListener('click', () => {
     window.location.href = '/rutinas';

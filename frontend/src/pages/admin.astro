@@ -1,0 +1,795 @@
+---
+import ProtectedLayout from "../layouts/ProtectedLayout.astro";
+---
+
+<ProtectedLayout>
+<div id="admin-root" class="w-full min-h-screen px-4 md:px-12 pt-4 md:pt-6">
+
+  <!-- Header Admin -->
+  <div class="flex items-center justify-between mb-8 mt-2">
+    <div class="flex items-center gap-3">
+      <div class="bg-blue rounded-xl p-2 shadow-md shadow-black">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#222831" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/><path d="M19 3v4"/><path d="M21 5h-4"/></svg>
+      </div>
+      <div>
+        <h1 class="text-white text-2xl md:text-3xl poetsen-one-regular select-none">Panel de Administración</h1>
+        <p id="admin-user-name" class="text-blue text-sm select-none">Cargando...</p>
+      </div>
+    </div>
+    <button id="btn-logout" class="flex items-center gap-2 bg-red/20 hover:bg-red text-red hover:text-white px-4 py-2 rounded-xl transition duration-200 ease-in-out text-sm poetsen-one-regular border border-red/40 hover:border-red select-none hover:-translate-y-1 hover:shadow-md hover:shadow-red/40">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+      Salir
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-2 mb-6">
+    <button id="tab-rutinas" class="tab-btn active-tab poetsen-one-regular px-5 py-2.5 rounded-xl transition duration-200 ease-in-out select-none text-sm md:text-base">
+      Rutinas
+    </button>
+    <button id="tab-ejercicios" class="tab-btn poetsen-one-regular px-5 py-2.5 rounded-xl transition duration-200 ease-in-out select-none text-sm md:text-base">
+      Ejercicios
+    </button>
+  </div>
+
+  <!-- ==================== SECCIÓN RUTINAS ==================== -->
+  <section id="seccion-rutinas" class="admin-section">
+    <!-- Barra de búsqueda -->
+    <div class="flex flex-col md:flex-row gap-3 mb-5">
+      <div class="relative flex-1">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-blue" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00ADB5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="buscar-rutinas" type="text" placeholder="Buscar rutina..." class="w-full bg-secondary text-white placeholder-white/40 pl-9 pr-4 py-2.5 rounded-xl border border-white/10 focus:outline-none focus:border-blue transition duration-200 text-sm" />
+      </div>
+      <p id="estado-rutinas" class="text-white/50 text-sm self-center select-none min-w-max"></p>
+    </div>
+
+    <!-- Tabla de rutinas -->
+    <div class="bg-secondary/80 rounded-2xl shadow-lg shadow-black/50 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-blue/20 text-blue poetsen-one-regular">
+            <tr>
+              <th class="px-4 py-3">Nombre</th>
+              <th class="px-4 py-3 hidden md:table-cell">Días</th>
+              <th class="px-4 py-3 hidden lg:table-cell">Pública</th>
+              <th class="px-4 py-3 hidden lg:table-cell">Sistema</th>
+              <th class="px-4 py-3 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-rutinas-body" class="divide-y divide-white/5 text-white/80">
+            <tr><td colspan="5" class="px-4 py-8 text-center text-white/40 select-none">Cargando rutinas...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Paginación -->
+      <div class="flex items-center justify-between px-4 py-3 border-t border-white/5">
+        <button id="prev-rutinas" class="pag-btn poetsen-one-regular" disabled>← Anterior</button>
+        <span id="info-rutinas" class="text-white/40 text-xs select-none"></span>
+        <button id="next-rutinas" class="pag-btn poetsen-one-regular" disabled>Siguiente →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SECCIÓN EJERCICIOS ==================== -->
+  <section id="seccion-ejercicios" class="admin-section hidden">
+    <div class="flex flex-col md:flex-row gap-3 mb-5">
+      <div class="relative flex-1">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00ADB5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="buscar-ejercicios" type="text" placeholder="Buscar ejercicio..." class="w-full bg-secondary text-white placeholder-white/40 pl-9 pr-4 py-2.5 rounded-xl border border-white/10 focus:outline-none focus:border-blue transition duration-200 text-sm" />
+      </div>
+      <p id="estado-ejercicios" class="text-white/50 text-sm self-center select-none min-w-max"></p>
+    </div>
+
+    <div class="bg-secondary/80 rounded-2xl shadow-lg shadow-black/50 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-blue/20 text-blue poetsen-one-regular">
+            <tr>
+              <th class="px-4 py-3">Nombre</th>
+              <th class="px-4 py-3 hidden md:table-cell">Grupo Muscular</th>
+              <th class="px-4 py-3 hidden lg:table-cell">Equipo</th>
+              <th class="px-4 py-3 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-ejercicios-body" class="divide-y divide-white/5 text-white/80">
+            <tr><td colspan="4" class="px-4 py-8 text-center text-white/40 select-none">Cargando ejercicios...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex items-center justify-between px-4 py-3 border-t border-white/5">
+        <button id="prev-ejercicios" class="pag-btn poetsen-one-regular" disabled>← Anterior</button>
+        <span id="info-ejercicios" class="text-white/40 text-xs select-none"></span>
+        <button id="next-ejercicios" class="pag-btn poetsen-one-regular" disabled>Siguiente →</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ==================== MODAL EDITAR RUTINA ==================== -->
+<div id="modal-rutina" class="modal-overlay">
+  <div class="modal-box">
+    <div class="flex justify-between items-center mb-5">
+      <h2 class="text-white text-xl poetsen-one-regular">Editar Rutina</h2>
+      <button id="cerrar-modal-rutina" class="text-white/50 hover:text-white transition">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <form id="form-rutina" class="flex flex-col gap-4">
+      <input type="hidden" id="rutina-id" />
+      <div class="campo-grupo">
+        <label class="campo-label">Nombre</label>
+        <input id="rutina-nombre" type="text" class="campo-input" placeholder="Nombre de la rutina" />
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label">Descripción</label>
+        <textarea id="rutina-descripcion" class="campo-input min-h-[80px] resize-none" placeholder="Descripción (opcional)"></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="campo-grupo">
+          <label class="campo-label">¿Es pública?</label>
+          <select id="rutina-publica" class="campo-input">
+            <option value="1">Sí</option>
+            <option value="0">No</option>
+          </select>
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label">¿De sistema?</label>
+          <select id="rutina-sistema" class="campo-input">
+            <option value="0">No</option>
+            <option value="1">Sí</option>
+          </select>
+        </div>
+      </div>
+      <p id="error-rutina" class="text-red text-sm hidden"></p>
+      <div class="flex gap-3 justify-end mt-2">
+        <button type="button" id="cancelar-rutina" class="btn-secundario">Cancelar</button>
+        <button type="submit" class="btn-primario">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== MODAL EDITAR EJERCICIO ==================== -->
+<div id="modal-ejercicio" class="modal-overlay">
+  <div class="modal-box">
+    <div class="flex justify-between items-center mb-5">
+      <h2 class="text-white text-xl poetsen-one-regular">Editar Ejercicio</h2>
+      <button id="cerrar-modal-ejercicio" class="text-white/50 hover:text-white transition">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <form id="form-ejercicio" class="flex flex-col gap-4">
+      <input type="hidden" id="ejercicio-id" />
+      <div class="campo-grupo">
+        <label class="campo-label">Nombre</label>
+        <input id="ejercicio-nombre" type="text" class="campo-input" placeholder="Nombre del ejercicio" />
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label">Descripción</label>
+        <textarea id="ejercicio-descripcion" class="campo-input min-h-[70px] resize-none" placeholder="Descripción (opcional)"></textarea>
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label">Grupo Muscular</label>
+        <select id="ejercicio-grupo" class="campo-input">
+          <option value="">Cargando...</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="campo-grupo">
+          <label class="campo-label">Tipo de equipo</label>
+          <input id="ejercicio-equipo" type="text" class="campo-input" placeholder="Ej: Mancuernas" />
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label">Máquina</label>
+          <input id="ejercicio-maquina" type="text" class="campo-input" placeholder="Nombre máquina" />
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="campo-grupo">
+          <label class="campo-label">¿Con asiento?</label>
+          <select id="ejercicio-asiento" class="campo-input">
+            <option value="0">No</option>
+            <option value="1">Sí</option>
+          </select>
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label">¿Con respaldo?</label>
+          <select id="ejercicio-respaldo" class="campo-input">
+            <option value="0">No</option>
+            <option value="1">Sí</option>
+          </select>
+        </div>
+      </div>
+      <p id="error-ejercicio" class="text-red text-sm hidden"></p>
+      <div class="flex gap-3 justify-end mt-2">
+        <button type="button" id="cancelar-ejercicio" class="btn-secundario">Cancelar</button>
+        <button type="submit" class="btn-primario">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== MODAL CONFIRMAR ELIMINACIÓN ==================== -->
+<div id="modal-confirmar" class="modal-overlay">
+  <div class="modal-box max-w-sm">
+    <div class="flex flex-col items-center gap-4 text-center">
+      <div class="bg-red/20 p-4 rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#B5001B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="m19 6-.867 12.142A2 2 0 0 1 16.138 20H7.862a2 2 0 0 1-1.995-1.858L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </div>
+      <h2 class="text-white text-lg poetsen-one-regular">¿Confirmar eliminación?</h2>
+      <p id="confirmar-texto" class="text-white/60 text-sm">Esta acción no se puede deshacer.</p>
+      <div class="flex gap-3 w-full">
+        <button id="cancelar-eliminar" class="btn-secundario flex-1">Cancelar</button>
+        <button id="confirmar-eliminar" class="flex-1 bg-red hover:bg-red/80 text-white px-4 py-2.5 rounded-xl poetsen-one-regular transition duration-200 ease-in-out hover:-translate-y-1 hover:shadow-md hover:shadow-red/40 text-sm">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TOAST NOTIFICACIÓN ==================== -->
+<div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+  <div id="toast-inner" class="px-5 py-3 rounded-xl shadow-lg shadow-black/50 poetsen-one-regular text-sm flex items-center gap-2 transition-all duration-300 translate-y-2 opacity-0">
+    <span id="toast-icon"></span>
+    <span id="toast-msg"></span>
+  </div>
+</div>
+
+</ProtectedLayout>
+
+<style>
+  /* ===== Tabs ===== */
+  .tab-btn {
+    background: rgba(57,62,70,0.6);
+    color: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .tab-btn:hover {
+    color: #fff;
+    background: rgba(57,62,70,0.9);
+  }
+  .active-tab {
+    background: #00ADB5;
+    color: #222831;
+    border-color: #00ADB5;
+  }
+
+  /* ===== Botones paginación ===== */
+  .pag-btn {
+    background: rgba(57,62,70,0.8);
+    color: rgba(255,255,255,0.6);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 0.4rem 1rem;
+    border-radius: 0.6rem;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .pag-btn:hover:not(:disabled) {
+    background: #00ADB5;
+    color: #222831;
+    border-color: #00ADB5;
+    transform: translateY(-2px);
+  }
+  .pag-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  /* ===== Botones acción tabla ===== */
+  .btn-editar {
+    background: rgba(0,173,181,0.15);
+    color: #00ADB5;
+    border: 1px solid rgba(0,173,181,0.3);
+    padding: 0.3rem 0.7rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .btn-editar:hover {
+    background: #00ADB5;
+    color: #222831;
+    transform: translateY(-1px);
+  }
+  .btn-eliminar {
+    background: rgba(181,0,27,0.15);
+    color: #B5001B;
+    border: 1px solid rgba(181,0,27,0.3);
+    padding: 0.3rem 0.7rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .btn-eliminar:hover {
+    background: #B5001B;
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
+  /* ===== Modal ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .modal-overlay.modal-open {
+    display: flex;
+  }
+  .modal-box {
+    background: #393E46;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 1.25rem;
+    padding: 1.75rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    animation: modalIn 0.2s ease;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  /* ===== Campos form ===== */
+  .campo-grupo { display: flex; flex-direction: column; gap: 0.4rem; }
+  .campo-label { color: rgba(255,255,255,0.6); font-size: 0.8rem; }
+  .campo-input {
+    background: #222831;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.65rem;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .campo-input:focus { border-color: #00ADB5; }
+  .campo-input option { background: #393E46; }
+
+  /* ===== Botones del form ===== */
+  .btn-primario {
+    background: #00ADB5;
+    color: #222831;
+    padding: 0.6rem 1.4rem;
+    border-radius: 0.75rem;
+    font-family: "Poetsen One", sans-serif;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primario:hover { background: #009aa0; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,173,181,0.35); }
+  .btn-secundario {
+    background: transparent;
+    color: rgba(255,255,255,0.6);
+    padding: 0.6rem 1.4rem;
+    border-radius: 0.75rem;
+    font-family: "Poetsen One", sans-serif;
+    font-size: 0.875rem;
+    border: 1px solid rgba(255,255,255,0.15);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .btn-secundario:hover { color: #fff; border-color: rgba(255,255,255,0.4); transform: translateY(-1px); }
+
+  /* ===== Badge ===== */
+  .badge-si { background: rgba(0,181,118,0.2); color: #00B576; padding: 0.15rem 0.55rem; border-radius: 99px; font-size: 0.7rem; }
+  .badge-no { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.4); padding: 0.15rem 0.55rem; border-radius: 99px; font-size: 0.7rem; }
+</style>
+
+<script>
+const API = (import.meta.env.PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+const token = () => sessionStorage.getItem('auth_token') ?? '';
+
+// ==================== HELPERS ====================
+function headers() {
+  return { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token()}` };
+}
+
+function showToast(msg: string, tipo: 'ok' | 'error' = 'ok') {
+  const wrap  = document.getElementById('toast')!;
+  const inner = document.getElementById('toast-inner')!;
+  const icon  = document.getElementById('toast-icon')!;
+  const txt   = document.getElementById('toast-msg')!;
+  txt.textContent = msg;
+  if (tipo === 'ok') {
+    inner.className = 'px-5 py-3 rounded-xl shadow-lg shadow-black/50 poetsen-one-regular text-sm flex items-center gap-2 bg-green text-primary';
+    icon.innerHTML = '✓';
+  } else {
+    inner.className = 'px-5 py-3 rounded-xl shadow-lg shadow-black/50 poetsen-one-regular text-sm flex items-center gap-2 bg-red text-white';
+    icon.innerHTML = '✕';
+  }
+  wrap.classList.remove('hidden');
+  setTimeout(() => { inner.classList.remove('translate-y-2', 'opacity-0'); }, 10);
+  setTimeout(() => {
+    inner.classList.add('translate-y-2', 'opacity-0');
+    setTimeout(() => wrap.classList.add('hidden'), 300);
+  }, 3000);
+}
+
+function badge(val: boolean) {
+  return val
+    ? '<span class="badge-si">Sí</span>'
+    : '<span class="badge-no">No</span>';
+}
+
+// ==================== TABS ====================
+const tabRutinas    = document.getElementById('tab-rutinas')!;
+const tabEjercicios = document.getElementById('tab-ejercicios')!;
+const secRutinas    = document.getElementById('seccion-rutinas')!;
+const secEjercicios = document.getElementById('seccion-ejercicios')!;
+
+tabRutinas.addEventListener('click', () => {
+  tabRutinas.classList.add('active-tab');
+  tabEjercicios.classList.remove('active-tab');
+  secRutinas.classList.remove('hidden');
+  secEjercicios.classList.add('hidden');
+});
+tabEjercicios.addEventListener('click', () => {
+  tabEjercicios.classList.add('active-tab');
+  tabRutinas.classList.remove('active-tab');
+  secEjercicios.classList.remove('hidden');
+  secRutinas.classList.add('hidden');
+  if (!ejerciciosLoaded) cargarEjercicios(1);
+  if (!gruposLoaded) cargarGrupos();
+});
+
+// ==================== LOGOUT ====================
+document.getElementById('btn-logout')?.addEventListener('click', async () => {
+  try {
+    await fetch(`${API}/logout`, { method: 'POST', headers: headers() });
+  } finally {
+    sessionStorage.removeItem('auth_token');
+    window.location.replace('/');
+  }
+});
+
+// ==================== CARGAR NOMBRE ADMIN ====================
+(async () => {
+  try {
+    const r = await fetch(`${API}/user`, { headers: headers() });
+    if (r.ok) {
+      const data = await r.json();
+      const u = data.success;
+      document.getElementById('admin-user-name')!.textContent = `${u?.name ?? 'Admin'} — Administrador`;
+    }
+  } catch {}
+})();
+
+// ==================== RUTINAS ====================
+let paginaRutinas = 1;
+let ultimaPagRutinas = 1;
+let busquedaRutinas = '';
+let debounceRutinas: ReturnType<typeof setTimeout>;
+
+async function cargarRutinas(pagina = 1) {
+  const body  = document.getElementById('tabla-rutinas-body')!;
+  const estado = document.getElementById('estado-rutinas')!;
+  const info  = document.getElementById('info-rutinas')!;
+  const prev  = document.getElementById('prev-rutinas') as HTMLButtonElement;
+  const next  = document.getElementById('next-rutinas') as HTMLButtonElement;
+
+  body.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-white/40 select-none">Cargando...</td></tr>`;
+  prev.disabled = true; next.disabled = true;
+
+  const params = new URLSearchParams({ page: String(pagina), per_page: '12' });
+  if (busquedaRutinas) params.set('search', busquedaRutinas);
+
+  try {
+    const r = await fetch(`${API}/v1/admin/routines?${params}`, { headers: headers() });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    const items = data.data ?? [];
+    paginaRutinas   = data.current_page ?? 1;
+    ultimaPagRutinas = data.last_page ?? 1;
+
+    estado.textContent = `${data.total ?? items.length} rutina${(data.total ?? items.length) === 1 ? '' : 's'}`;
+    info.textContent   = `Pág. ${paginaRutinas} / ${ultimaPagRutinas}`;
+    prev.disabled = paginaRutinas <= 1;
+    next.disabled = paginaRutinas >= ultimaPagRutinas;
+
+    if (items.length === 0) {
+      body.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-white/40 select-none">No se encontraron rutinas.</td></tr>`;
+      return;
+    }
+
+    body.innerHTML = items.map((r: any) => `
+      <tr class="hover:bg-white/3 transition duration-150" data-id="${r.id}">
+        <td class="px-4 py-3 font-medium text-white">${r.name ?? '—'}</td>
+        <td class="px-4 py-3 hidden md:table-cell text-white/60">${r.routine_days?.length ?? 0}</td>
+        <td class="px-4 py-3 hidden lg:table-cell">${badge(!!r.is_public)}</td>
+        <td class="px-4 py-3 hidden lg:table-cell">${badge(!!r.is_system_routine)}</td>
+        <td class="px-4 py-3 text-right">
+          <div class="flex gap-2 justify-end">
+            <button class="btn-editar edit-rutina" data-rutina='${JSON.stringify({id:r.id,name:r.name,description:r.description,is_public:r.is_public,is_system_routine:r.is_system_routine})}'>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:3px"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>Editar
+            </button>
+            <button class="btn-eliminar del-rutina" data-id="${r.id}" data-nombre="${r.name}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:3px"><polyline points="3 6 5 6 21 6"/><path d="m19 6-.867 12.142A2 2 0 0 1 16.138 20H7.862a2 2 0 0 1-1.995-1.858L5 6"/></svg>Eliminar
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    // Listeners de editar y eliminar rutina
+    body.querySelectorAll('.edit-rutina').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const data = JSON.parse((btn as HTMLElement).dataset.rutina ?? '{}');
+        abrirModalRutina(data);
+      });
+    });
+    body.querySelectorAll('.del-rutina').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = (btn as HTMLElement).dataset.id!;
+        const nombre = (btn as HTMLElement).dataset.nombre!;
+        confirmarEliminar(`¿Eliminar la rutina "${nombre}"? Se borrarán todos sus días y ejercicios asociados.`, async () => {
+          try {
+            const res = await fetch(`${API}/v1/admin/routines/${id}`, { method: 'DELETE', headers: headers() });
+            if (!res.ok) throw new Error();
+            showToast('Rutina eliminada correctamente.');
+            cargarRutinas(paginaRutinas);
+          } catch {
+            showToast('Error al eliminar la rutina.', 'error');
+          }
+        });
+      });
+    });
+  } catch (e) {
+    body.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-red select-none">Error al cargar las rutinas.</td></tr>`;
+  }
+}
+
+document.getElementById('buscar-rutinas')?.addEventListener('input', (e) => {
+  busquedaRutinas = (e.target as HTMLInputElement).value.trim();
+  clearTimeout(debounceRutinas);
+  debounceRutinas = setTimeout(() => cargarRutinas(1), 400);
+});
+document.getElementById('prev-rutinas')?.addEventListener('click', () => { if (paginaRutinas > 1) cargarRutinas(paginaRutinas - 1); });
+document.getElementById('next-rutinas')?.addEventListener('click', () => { if (paginaRutinas < ultimaPagRutinas) cargarRutinas(paginaRutinas + 1); });
+
+// Modal editar rutina
+function abrirModalRutina(r: any) {
+  (document.getElementById('rutina-id') as HTMLInputElement).value   = r.id;
+  (document.getElementById('rutina-nombre') as HTMLInputElement).value = r.name ?? '';
+  (document.getElementById('rutina-descripcion') as HTMLTextAreaElement).value = r.description ?? '';
+  (document.getElementById('rutina-publica') as HTMLSelectElement).value   = r.is_public  ? '1' : '0';
+  (document.getElementById('rutina-sistema') as HTMLSelectElement).value   = r.is_system_routine ? '1' : '0';
+  const err = document.getElementById('error-rutina')!;
+  err.classList.add('hidden'); err.textContent = '';
+  document.getElementById('modal-rutina')!.classList.add('modal-open');
+}
+function cerrarModalRutina() { document.getElementById('modal-rutina')!.classList.remove('modal-open'); }
+document.getElementById('cerrar-modal-rutina')?.addEventListener('click', cerrarModalRutina);
+document.getElementById('cancelar-rutina')?.addEventListener('click', cerrarModalRutina);
+document.getElementById('modal-rutina')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) cerrarModalRutina(); });
+
+document.getElementById('form-rutina')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id          = (document.getElementById('rutina-id') as HTMLInputElement).value;
+  const nombre      = (document.getElementById('rutina-nombre') as HTMLInputElement).value.trim();
+  const descripcion = (document.getElementById('rutina-descripcion') as HTMLTextAreaElement).value.trim();
+  const publica     = (document.getElementById('rutina-publica') as HTMLSelectElement).value === '1';
+  const sistema     = (document.getElementById('rutina-sistema') as HTMLSelectElement).value === '1';
+  const err         = document.getElementById('error-rutina')!;
+
+  if (!nombre) { err.textContent = 'El nombre es obligatorio.'; err.classList.remove('hidden'); return; }
+
+  try {
+    const r = await fetch(`${API}/v1/admin/routines/${id}`, {
+      method: 'PUT',
+      headers: headers(),
+      body: JSON.stringify({ name: nombre, description: descripcion || null, is_public: publica, is_system_routine: sistema }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.message ?? 'Error');
+    showToast('Rutina actualizada correctamente.');
+    cerrarModalRutina();
+    cargarRutinas(paginaRutinas);
+  } catch (ex: any) {
+    err.textContent = ex.message ?? 'Error al guardar.';
+    err.classList.remove('hidden');
+  }
+});
+
+// ==================== EJERCICIOS ====================
+let paginaEjercicios = 1;
+let ultimaPagEjercicios = 1;
+let busquedaEjercicios = '';
+let debounceEjercicios: ReturnType<typeof setTimeout>;
+let ejerciciosLoaded = false;
+let gruposLoaded = false;
+
+async function cargarEjercicios(pagina = 1) {
+  ejerciciosLoaded = true;
+  const body  = document.getElementById('tabla-ejercicios-body')!;
+  const estado = document.getElementById('estado-ejercicios')!;
+  const info  = document.getElementById('info-ejercicios')!;
+  const prev  = document.getElementById('prev-ejercicios') as HTMLButtonElement;
+  const next  = document.getElementById('next-ejercicios') as HTMLButtonElement;
+
+  body.innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-white/40 select-none">Cargando...</td></tr>`;
+  prev.disabled = true; next.disabled = true;
+
+  const params = new URLSearchParams({ page: String(pagina), per_page: '12' });
+  if (busquedaEjercicios) params.set('search', busquedaEjercicios);
+
+  try {
+    const r = await fetch(`${API}/v1/admin/exercises?${params}`, { headers: headers() });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    const items = data.data ?? [];
+    paginaEjercicios   = data.current_page ?? 1;
+    ultimaPagEjercicios = data.last_page ?? 1;
+
+    estado.textContent = `${data.total ?? items.length} ejercicio${(data.total ?? items.length) === 1 ? '' : 's'}`;
+    info.textContent   = `Pág. ${paginaEjercicios} / ${ultimaPagEjercicios}`;
+    prev.disabled = paginaEjercicios <= 1;
+    next.disabled = paginaEjercicios >= ultimaPagEjercicios;
+
+    if (items.length === 0) {
+      body.innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-white/40 select-none">No se encontraron ejercicios.</td></tr>`;
+      return;
+    }
+
+    body.innerHTML = items.map((ex: any) => `
+      <tr class="hover:bg-white/3 transition duration-150">
+        <td class="px-4 py-3 font-medium text-white">${ex.name ?? '—'}</td>
+        <td class="px-4 py-3 hidden md:table-cell text-white/60">${ex.muscle_group?.name ?? '—'}</td>
+        <td class="px-4 py-3 hidden lg:table-cell text-white/60">${ex.equipment_type ?? '—'}</td>
+        <td class="px-4 py-3 text-right">
+          <div class="flex gap-2 justify-end">
+            <button class="btn-editar edit-ejercicio" data-ejercicio='${JSON.stringify({id:ex.id,name:ex.name,description:ex.description,muscle_group_id:ex.muscle_group_id,equipment_type:ex.equipment_type,maquina:ex.maquina,con_asiento:ex.con_asiento,con_respaldo:ex.con_respaldo})}'>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:3px"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>Editar
+            </button>
+            <button class="btn-eliminar del-ejercicio" data-id="${ex.id}" data-nombre="${ex.name}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:3px"><polyline points="3 6 5 6 21 6"/><path d="m19 6-.867 12.142A2 2 0 0 1 16.138 20H7.862a2 2 0 0 1-1.995-1.858L5 6"/></svg>Eliminar
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    body.querySelectorAll('.edit-ejercicio').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const data = JSON.parse((btn as HTMLElement).dataset.ejercicio ?? '{}');
+        abrirModalEjercicio(data);
+      });
+    });
+    body.querySelectorAll('.del-ejercicio').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = (btn as HTMLElement).dataset.id!;
+        const nombre = (btn as HTMLElement).dataset.nombre!;
+        confirmarEliminar(`¿Eliminar el ejercicio "${nombre}"?`, async () => {
+          try {
+            const res = await fetch(`${API}/v1/admin/exercises/${id}`, { method: 'DELETE', headers: headers() });
+            if (!res.ok) throw new Error();
+            showToast('Ejercicio eliminado correctamente.');
+            cargarEjercicios(paginaEjercicios);
+          } catch {
+            showToast('Error al eliminar el ejercicio.', 'error');
+          }
+        });
+      });
+    });
+  } catch {
+    body.innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-red select-none">Error al cargar los ejercicios.</td></tr>`;
+  }
+}
+
+async function cargarGrupos() {
+  gruposLoaded = true;
+  const sel = document.getElementById('ejercicio-grupo') as HTMLSelectElement;
+  try {
+    const r = await fetch(`${API}/v1/admin/muscle-groups`, { headers: headers() });
+    if (!r.ok) throw new Error();
+    const grupos: any[] = await r.json();
+    sel.innerHTML = grupos.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+  } catch {
+    sel.innerHTML = '<option value="">Error al cargar grupos</option>';
+  }
+}
+
+document.getElementById('buscar-ejercicios')?.addEventListener('input', (e) => {
+  busquedaEjercicios = (e.target as HTMLInputElement).value.trim();
+  clearTimeout(debounceEjercicios);
+  debounceEjercicios = setTimeout(() => cargarEjercicios(1), 400);
+});
+document.getElementById('prev-ejercicios')?.addEventListener('click', () => { if (paginaEjercicios > 1) cargarEjercicios(paginaEjercicios - 1); });
+document.getElementById('next-ejercicios')?.addEventListener('click', () => { if (paginaEjercicios < ultimaPagEjercicios) cargarEjercicios(paginaEjercicios + 1); });
+
+// Modal editar ejercicio
+function abrirModalEjercicio(ex: any) {
+  (document.getElementById('ejercicio-id') as HTMLInputElement).value         = ex.id;
+  (document.getElementById('ejercicio-nombre') as HTMLInputElement).value     = ex.name ?? '';
+  (document.getElementById('ejercicio-descripcion') as HTMLTextAreaElement).value = ex.description ?? '';
+  (document.getElementById('ejercicio-grupo') as HTMLSelectElement).value     = String(ex.muscle_group_id ?? '');
+  (document.getElementById('ejercicio-equipo') as HTMLInputElement).value     = ex.equipment_type ?? '';
+  (document.getElementById('ejercicio-maquina') as HTMLInputElement).value    = ex.maquina ?? '';
+  (document.getElementById('ejercicio-asiento') as HTMLSelectElement).value   = ex.con_asiento ? '1' : '0';
+  (document.getElementById('ejercicio-respaldo') as HTMLSelectElement).value  = ex.con_respaldo ? '1' : '0';
+  const err = document.getElementById('error-ejercicio')!;
+  err.classList.add('hidden'); err.textContent = '';
+  document.getElementById('modal-ejercicio')!.classList.add('modal-open');
+}
+function cerrarModalEjercicio() { document.getElementById('modal-ejercicio')!.classList.remove('modal-open'); }
+document.getElementById('cerrar-modal-ejercicio')?.addEventListener('click', cerrarModalEjercicio);
+document.getElementById('cancelar-ejercicio')?.addEventListener('click', cerrarModalEjercicio);
+document.getElementById('modal-ejercicio')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) cerrarModalEjercicio(); });
+
+document.getElementById('form-ejercicio')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id          = (document.getElementById('ejercicio-id') as HTMLInputElement).value;
+  const nombre      = (document.getElementById('ejercicio-nombre') as HTMLInputElement).value.trim();
+  const descripcion = (document.getElementById('ejercicio-descripcion') as HTMLTextAreaElement).value.trim();
+  const grupoId     = (document.getElementById('ejercicio-grupo') as HTMLSelectElement).value;
+  const equipo      = (document.getElementById('ejercicio-equipo') as HTMLInputElement).value.trim();
+  const maquina     = (document.getElementById('ejercicio-maquina') as HTMLInputElement).value.trim();
+  const asiento     = (document.getElementById('ejercicio-asiento') as HTMLSelectElement).value === '1';
+  const respaldo    = (document.getElementById('ejercicio-respaldo') as HTMLSelectElement).value === '1';
+  const err         = document.getElementById('error-ejercicio')!;
+
+  if (!nombre) { err.textContent = 'El nombre es obligatorio.'; err.classList.remove('hidden'); return; }
+
+  try {
+    const r = await fetch(`${API}/v1/admin/exercises/${id}`, {
+      method: 'PUT',
+      headers: headers(),
+      body: JSON.stringify({
+        name: nombre,
+        description: descripcion || null,
+        muscle_group_id: grupoId ? Number(grupoId) : undefined,
+        equipment_type: equipo || null,
+        maquina: maquina || null,
+        con_asiento: asiento,
+        con_respaldo: respaldo,
+      }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.message ?? 'Error');
+    showToast('Ejercicio actualizado correctamente.');
+    cerrarModalEjercicio();
+    cargarEjercicios(paginaEjercicios);
+  } catch (ex2: any) {
+    err.textContent = ex2.message ?? 'Error al guardar.';
+    err.classList.remove('hidden');
+  }
+});
+
+// ==================== MODAL CONFIRMAR ELIMINACIÓN ====================
+let accionEliminar: (() => Promise<void>) | null = null;
+
+function confirmarEliminar(texto: string, accion: () => Promise<void>) {
+  document.getElementById('confirmar-texto')!.textContent = texto;
+  accionEliminar = accion;
+  document.getElementById('modal-confirmar')!.classList.add('modal-open');
+}
+
+document.getElementById('cancelar-eliminar')?.addEventListener('click', () => {
+  document.getElementById('modal-confirmar')!.classList.remove('modal-open');
+  accionEliminar = null;
+});
+document.getElementById('confirmar-eliminar')?.addEventListener('click', async () => {
+  document.getElementById('modal-confirmar')!.classList.remove('modal-open');
+  if (accionEliminar) await accionEliminar();
+  accionEliminar = null;
+});
+document.getElementById('modal-confirmar')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) {
+    document.getElementById('modal-confirmar')!.classList.remove('modal-open');
+    accionEliminar = null;
+  }
+});
+
+// ==================== ARRANQUE ====================
+cargarRutinas(1);
+</script>
