@@ -2,12 +2,15 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\ResetsPrimaryKeySequence;
 use Illuminate\Database\Seeder;
 use App\Models\MuscleGroup;
 use Illuminate\Support\Facades\DB;
 
 class MuscleGroupSeeder extends Seeder
 {
+    use ResetsPrimaryKeySequence;
+
     /**
      * Run the database seeds.
      */
@@ -50,7 +53,7 @@ class MuscleGroupSeeder extends Seeder
 
             // Ajustar la secuencia de Postgres para que no falle el autoincremento de IDs posteriores
             $maxId = MuscleGroup::max('id') ?? 1;
-            DB::statement("SELECT setval('muscle_groups_id_seq', {$maxId});");
+            $this->resetPrimaryKeySequence('muscle_groups', 'muscle_groups_id_seq', $maxId);
 
             $this->command->info('¡Grupos musculares cargados exitosamente desde el CSV!');
         }

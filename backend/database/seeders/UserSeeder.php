@@ -56,9 +56,15 @@ class UserSeeder extends Seeder
 
         fclose($file);
 
-        // Ajustar la secuencia de autoincremento de PostgreSQL
+        // Ajustar el siguiente identificador para el motor relacional configurado.
         $maxId = User::max('id') ?? 1;
-        DB::statement("SELECT setval('users_id_seq', {$maxId});");
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("SELECT setval('users_id_seq', {$maxId});");
+        }
+
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE users AUTO_INCREMENT = '.($maxId + 1));
+        }
 
         $this->command->info('¡Usuarios cargados exitosamente desde el CSV!');
     }

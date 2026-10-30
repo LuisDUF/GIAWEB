@@ -2,12 +2,17 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\NormalizesCsvTimestamps;
+use Database\Seeders\Concerns\ResetsPrimaryKeySequence;
 use Illuminate\Database\Seeder;
 use App\Models\RoutineDayExercise;
 use Illuminate\Support\Facades\DB;
 
 class RoutineDayExerciseSeeder extends Seeder
 {
+    use NormalizesCsvTimestamps;
+    use ResetsPrimaryKeySequence;
+
     public function run(): void
     {
         $filePath = database_path('seeders/data/routine_day_exercises.csv');
@@ -43,8 +48,8 @@ class RoutineDayExerciseSeeder extends Seeder
                 'exercise_id'    => (int) $row['exercise_id'],
                 'order_index'    => (int) $row['order_index'],
                 'superset_id'    => null,
-                'created_at'     => !empty($row['created_at']) ? $row['created_at'] : now(),
-                'updated_at'     => !empty($row['updated_at']) ? $row['updated_at'] : now(),
+                'created_at'     => $this->csvTimestamp($row['created_at'] ?? null),
+                'updated_at'     => $this->csvTimestamp($row['updated_at'] ?? null),
             ];
 
             if (count($items) >= $batchSize) {
@@ -71,7 +76,7 @@ class RoutineDayExerciseSeeder extends Seeder
 
         // Ajustar secuencia en PostgreSQL
         $maxId = RoutineDayExercise::max('id') ?? 1;
-        DB::statement("SELECT setval('routine_day_exercises_id_seq', {$maxId});");
+        $this->resetPrimaryKeySequence('routine_day_exercises', 'routine_day_exercises_id_seq', $maxId);
 
         $this->command->info('¡Ejercicios por día de rutina cargados exitosamente!');
     }

@@ -3,8 +3,7 @@
 namespace App\Observers;
 
 use App\Models\WorkoutSession;
-use App\Models\ActivityLog;
-use Illuminate\Support\Facades\Log;
+use App\Services\ActivityOutboxService;
 
 class WorkoutSessionObserver
 {
@@ -43,25 +42,10 @@ class WorkoutSessionObserver
     }
 
     /**
-     * Método auxiliar privado para insertar el documento en MongoDB sin interrumpir
-     * el flujo principal de PostgreSQL en caso de fallo en la red/NoSQL.
+     * Persists to the relational outbox; the queue and reconciler deliver to MongoDB.
      */
     private function logActivity(string $action, WorkoutSession $workoutSession, array $changes): void
     {
-        try {
-            ActivityLog::create([
-                'timestamp'  => now()->toIso8601String(),
-                'user_id'    => auth()->id() ?? $workoutSession->user_id, // Asigna el usuario autenticado o el dueño de la sesión
-                'action'     => $action,
-                'entity'     => 'workout_sessions',
-                'entity_id'  => $workoutSession->id,
-                'changes'    => $changes,
-                'ip_address' => request()->ip() ?? '127.0.0.1',
-                'user_agent' => request()->userAgent() ?? 'CLI/System',
-            ]);
-        } catch (\Throwable $e) {
-            // Manejo de resiliencia: Si MongoDB falla, no rompe la transacción de PostgreSQL
-            Log::error("Fallo al escribir bitácora en MongoDB para WorkoutSession ID {$workoutSession->id}: " . $e->getMessage());
-        }
+        app(ActivityOutboxService::class)->record($action, $workoutSession, 'workout_sessions', $changes);
     }
 }

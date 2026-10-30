@@ -2,12 +2,15 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\ResetsPrimaryKeySequence;
 use Illuminate\Database\Seeder;
 use App\Models\Exercise;
 use Illuminate\Support\Facades\DB;
 
 class ExerciseSeeder extends Seeder
 {
+    use ResetsPrimaryKeySequence;
+
     public function run(): void
     {
         $filePath = database_path('seeders/data/exercises.csv');
@@ -55,7 +58,7 @@ class ExerciseSeeder extends Seeder
 
         // Actualizar la secuencia de la llave primaria en PostgreSQL
         $maxId = Exercise::max('id') ?? 1;
-        DB::statement("SELECT setval('exercises_id_seq', {$maxId});");
+        $this->resetPrimaryKeySequence('exercises', 'exercises_id_seq', $maxId);
 
         $this->command->info('¡Ejercicios cargados exitosamente desde el CSV!');
     }

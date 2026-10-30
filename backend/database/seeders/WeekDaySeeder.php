@@ -2,12 +2,15 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\ResetsPrimaryKeySequence;
 use Illuminate\Database\Seeder;
 use App\Models\WeekDays;
 use Illuminate\Support\Facades\DB;
 
 class WeekDaySeeder extends Seeder
 {
+    use ResetsPrimaryKeySequence;
+
     /**
      * Run the database seeds.
      */
@@ -48,9 +51,9 @@ class WeekDaySeeder extends Seeder
                 ['day', 'updated_at']
             );
 
-            // Ajustar la secuencia de autoincremento de PostgreSQL
+            // Ajustar el siguiente ID para el motor relacional configurado.
             $maxId = WeekDays::max('id') ?? 1;
-            DB::statement("SELECT setval('week_days_id_seq', {$maxId});");
+            $this->resetPrimaryKeySequence('week_days', 'week_days_id_seq', $maxId);
 
             $this->command->info('¡Días de la semana cargados exitosamente desde el CSV!');
         }

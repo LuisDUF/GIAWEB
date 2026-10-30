@@ -37,7 +37,8 @@ import '../../styles/global.css';
         }
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/workout-sessions/stats?filtro=${filtro}`, {
+            const apiUrl = (import.meta.env.PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+            const response = await fetch(`${apiUrl}/v1/workout-sessions/stats?filtro=${filtro}`, {
                 method: 'GET',
                 headers: {
                     Accept: 'application/json',

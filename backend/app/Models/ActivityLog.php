@@ -10,6 +10,7 @@ class ActivityLog extends MongoModel
     protected $collection = 'activity_logs';
 
     protected $fillable = [
+        'event_id',
         'timestamp',
         'user_id',
         'action',

@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: fitness-prod
+resources:
+  - ../../base
+  - namespace.yaml
+  - scale.yaml
+patchesStrategicMerge:
+  - patch.yaml
+images:
+  - name: proyecto-kubernet/frontend
+    newName: proyecto-kubernet/frontend
+    newTag: REPLACE_WITH_APPROVED_IMMUTABLE_TAG
+  - name: proyecto-kubernet/backend
+    newName: proyecto-kubernet/backend
+    newTag: REPLACE_WITH_APPROVED_IMMUTABLE_TAG

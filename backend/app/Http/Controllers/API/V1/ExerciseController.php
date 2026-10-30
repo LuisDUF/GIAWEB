@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\API\V1;
 use App\Models\Exercise;
 use App\Models\Routine;
 use Illuminate\Http\JsonResponse;

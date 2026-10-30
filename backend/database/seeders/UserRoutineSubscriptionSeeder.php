@@ -2,12 +2,17 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\NormalizesCsvTimestamps;
+use Database\Seeders\Concerns\ResetsPrimaryKeySequence;
 use Illuminate\Database\Seeder;
 use App\Models\UserRoutineSubscription;
 use Illuminate\Support\Facades\DB;
 
 class UserRoutineSubscriptionSeeder extends Seeder
 {
+    use NormalizesCsvTimestamps;
+    use ResetsPrimaryKeySequence;
+
     public function run(): void
     {
         $filePath = database_path('seeders/data/user_routine_subscriptions.csv');
@@ -49,10 +54,10 @@ class UserRoutineSubscriptionSeeder extends Seeder
                 'id'         => $id,
                 'user_id'    => $userId,
                 'routine_id' => (int) ($row['routine_id'] ?? 0),
-                'saved_at'   => !empty($row['saved_at']) ? $row['saved_at'] : now(),
+                'saved_at'   => $this->csvTimestamp($row['saved_at'] ?? null),
                 'is_active'  => filter_var($row['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
-                'created_at' => !empty($row['created_at']) ? $row['created_at'] : now(),
-                'updated_at' => !empty($row['updated_at']) ? $row['updated_at'] : now(),
+                'created_at' => $this->csvTimestamp($row['created_at'] ?? null),
+                'updated_at' => $this->csvTimestamp($row['updated_at'] ?? null),
             ];
 
             if (count($subscriptions) >= $batchSize) {
@@ -68,7 +73,7 @@ class UserRoutineSubscriptionSeeder extends Seeder
         fclose($file);
 
         $maxId = UserRoutineSubscription::max('id') ?? 1;
-        DB::statement("SELECT setval('user_routine_subscriptions_id_seq', {$maxId});");
+        $this->resetPrimaryKeySequence('user_routine_subscriptions', 'user_routine_subscriptions_id_seq', $maxId);
 
         $this->command->info('¡Suscripciones a rutinas cargadas exitosamente!');
     }

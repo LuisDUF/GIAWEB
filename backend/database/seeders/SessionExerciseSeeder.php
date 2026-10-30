@@ -2,12 +2,17 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\NormalizesCsvTimestamps;
+use Database\Seeders\Concerns\ResetsPrimaryKeySequence;
 use Illuminate\Database\Seeder;
 use App\Models\SessionExercise;
 use Illuminate\Support\Facades\DB;
 
 class SessionExerciseSeeder extends Seeder
 {
+    use NormalizesCsvTimestamps;
+    use ResetsPrimaryKeySequence;
+
     public function run(): void
     {
         $filePath = database_path('seeders/data/session_exercises.csv');
@@ -61,8 +66,8 @@ class SessionExerciseSeeder extends Seeder
                 'is_adhoc'          => filter_var($row['is_adhoc'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'notas'             => !empty($row['notas']) ? trim($row['notas']) : null,
                 'superset_id'       => null,
-                'created_at'        => !empty($row['created_at']) ? $row['created_at'] : now(),
-                'updated_at'        => !empty($row['updated_at']) ? $row['updated_at'] : now(),
+                'created_at'        => $this->csvTimestamp($row['created_at'] ?? null),
+                'updated_at'        => $this->csvTimestamp($row['updated_at'] ?? null),
             ];
 
             if (count($items) >= $batchSize) {
@@ -89,7 +94,7 @@ class SessionExerciseSeeder extends Seeder
 
         // Ajustar secuencia de ID en PostgreSQL
         $maxId = SessionExercise::max('id') ?? 1;
-        DB::statement("SELECT setval('session_exercises_id_seq', {$maxId});");
+        $this->resetPrimaryKeySequence('session_exercises', 'session_exercises_id_seq', $maxId);
 
         $this->command->info('¡Ejercicios de sesión cargados exitosamente!');
     }

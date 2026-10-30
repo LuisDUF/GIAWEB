@@ -2,12 +2,17 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\NormalizesCsvTimestamps;
+use Database\Seeders\Concerns\ResetsPrimaryKeySequence;
 use Illuminate\Database\Seeder;
 use App\Models\Routine;
 use Illuminate\Support\Facades\DB;
 
 class RoutineSeeder extends Seeder
 {
+    use NormalizesCsvTimestamps;
+    use ResetsPrimaryKeySequence;
+
     public function run(): void
     {
         $filePath = database_path('seeders/data/routines.csv');
@@ -37,8 +42,8 @@ class RoutineSeeder extends Seeder
                 'is_public'         => filter_var($row['is_public'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'is_system_routine' => filter_var($row['is_system_routine'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'esborrada'         => filter_var($row['esborrada'] ?? false, FILTER_VALIDATE_BOOLEAN),
-                'created_at'        => !empty($row['created_at']) ? $row['created_at'] : now(),
-                'updated_at'        => !empty($row['updated_at']) ? $row['updated_at'] : now(),
+                'created_at'        => $this->csvTimestamp($row['created_at'] ?? null),
+                'updated_at'        => $this->csvTimestamp($row['updated_at'] ?? null),
             ];
 
             if (count($routines) >= $batchSize) {
@@ -55,7 +60,7 @@ class RoutineSeeder extends Seeder
 
         // Ajustar secuencia de PostgreSQL para el ID de las rutinas
         $maxId = Routine::max('id') ?? 1;
-        DB::statement("SELECT setval('routines_id_seq', {$maxId});");
+        $this->resetPrimaryKeySequence('routines', 'routines_id_seq', $maxId);
 
         $this->command->info('¡Rutinas cargadas exitosamente!');
     }

@@ -1,0 +1,59 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: fitness-operational-alerts
+  namespace: observability
+  labels:
+    app.kubernetes.io/part-of: fitness-observability
+spec:
+  groups:
+    - name: fitness.availability
+      rules:
+        - alert: FitnessApplicationUnavailable
+          expr: kube_deployment_status_replicas_available{namespace="fitness-prod",deployment=~"backend|frontend"} < 1
+          for: 2m
+          labels: { severity: critical }
+          annotations:
+            summary: "Una capa pública de Fitness no tiene réplicas disponibles"
+            runbook: "Compruebe rollout, eventos, probes e Ingress del namespace fitness-prod."
+        - alert: FitnessNodeNotReady
+          expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+          for: 5m
+          labels: { severity: critical }
+          annotations:
+            summary: "Un nodo del clúster no está Ready"
+            runbook: "Compruebe kubectl get nodes y el estado del kubelet/CNI."
+    - name: fitness.capacity
+      rules:
+        - alert: FitnessPodHighCPU
+          expr: sum by (namespace,pod) (rate(container_cpu_usage_seconds_total{namespace="fitness-prod",container!="",image!=""}[5m])) / sum by (namespace,pod) (kube_pod_container_resource_requests{namespace="fitness-prod",resource="cpu"}) > 0.85
+          for: 10m
+          labels: { severity: warning }
+          annotations:
+            summary: "Un Pod de Fitness supera 85% de su CPU solicitada"
+            runbook: "Revise HPA, requests/limits y la carga de la aplicación."
+    - name: fitness.backups
+      rules:
+        - alert: FitnessBackupFailed
+          expr: kube_job_status_failed{namespace="fitness-prod",job_name=~".*backup.*"} > 0
+          for: 1m
+          labels: { severity: critical }
+          annotations:
+            summary: "Falló un Job de respaldo de Fitness"
+            runbook: "Inspeccione logs del Job y valide espacio, credenciales y conectividad."
+        - alert: FitnessBackupStale
+          expr: time() - max(kube_job_status_completion_time{namespace="fitness-prod",job_name=~".*backup.*"}) > 93600
+          for: 15m
+          labels: { severity: warning }
+          annotations:
+            summary: "No existe un respaldo válido de Fitness en las últimas 26 horas"
+            runbook: "Ejecute respaldo controlado, compruebe su integridad y registre RPO/RTO."
+    - name: fitness.traffic
+      rules:
+        - alert: FitnessIngressHigh5xxRate
+          expr: sum(rate(nginx_ingress_controller_requests{namespace="ingress-nginx",status=~"5.."}[5m])) / clamp_min(sum(rate(nginx_ingress_controller_requests{namespace="ingress-nginx"}[5m])), 1) > 0.05
+          for: 5m
+          labels: { severity: warning }
+          annotations:
+            summary: "La tasa 5xx del Ingress supera 5%"
+            runbook: "Revise endpoints, logs del controlador y disponibilidad del backend."

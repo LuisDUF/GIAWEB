@@ -1,0 +1,32 @@
+# Loki monolítico para el clúster de laboratorio. El PVC es local al control plane.
+deploymentMode: SingleBinary
+
+loki:
+  auth_enabled: false
+  useTestSchema: true
+  commonConfig:
+    replication_factor: 1
+  storage:
+    type: filesystem
+
+singleBinary:
+  replicas: 1
+  nodeSelector:
+    kubernetes.io/hostname: proyecto-prof
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { cpu: 500m, memory: 768Mi }
+  persistence:
+    enabled: true
+    storageClass: standard
+    size: 5Gi
+
+read: { replicas: 0 }
+write: { replicas: 0 }
+backend: { replicas: 0 }
+gateway: { enabled: false }
+minio: { enabled: false }
+chunksCache: { replicas: 0 }
+resultsCache: { replicas: 0 }
+test: { enabled: false }
+lokiCanary: { enabled: false }

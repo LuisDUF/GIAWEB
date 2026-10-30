@@ -2,7 +2,9 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -44,5 +46,18 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    /**
+     * Las peticiones de API sin token deben recibir 401 JSON, no una
+     * redirección a la ruta web "login".
+     */
+    protected function unauthenticated($request, AuthenticationException $exception): Response
+    {
+        if ($request->is('api/*') || $request->expectsJson()) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        return parent::unauthenticated($request, $exception);
     }
 }

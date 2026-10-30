@@ -3,8 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Exercise;
-use App\Models\ActivityLog;
-use Illuminate\Support\Facades\Log;
+use App\Services\ActivityOutboxService;
 
 class ExerciseObserver
 {
@@ -47,20 +46,6 @@ class ExerciseObserver
      */
     private function logActivity(string $action, Exercise $exercise, array $changes): void
     {
-        try {
-            ActivityLog::create([
-                'timestamp'  => now()->toIso8601String(),
-                'user_id'    => auth()->id(), // ID del usuario/admin que realiza la modificación
-                'action'     => $action,
-                'entity'     => 'exercises',
-                'entity_id'  => $exercise->id,
-                'changes'    => $changes,
-                'ip_address' => request()->ip() ?? '127.0.0.1',
-                'user_agent' => request()->userAgent() ?? 'CLI/System',
-            ]);
-        } catch (\Throwable $e) {
-            // Estrategia de resiliencia: Si MongoDB falla, no detiene la operación en PostgreSQL
-            Log::error("Fallo al registrar bitácora en MongoDB para Exercise ID {$exercise->id}: " . $e->getMessage());
-        }
+        app(ActivityOutboxService::class)->record($action, $exercise, 'exercises', $changes);
     }
 }

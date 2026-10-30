@@ -3,13 +3,14 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\V1\WorkoutSessionController;
-use App\Http\Controllers\Api\V1\SessionExerciseController;
-use App\Http\Controllers\Api\V1\RoutineDayController;
+use App\Http\Controllers\API\V1\SessionExerciseController;
+use App\Http\Controllers\API\V1\RoutineDayController;
 use App\Http\Controllers\API\V1\AuthController;
 use App\Http\Controllers\API\V1\UserRoutineSubscriptionController;
 use App\Http\Controllers\API\V1\RoutineController;
 use App\Http\Controllers\API\V1\ExerciseController;
 use App\Models\ActivityLog;
+use App\Http\Controllers\API\HealthController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -17,6 +18,8 @@ use App\Models\ActivityLog;
 */
 
 // Rutas públicas de Autenticación
+Route::get('/health', [HealthController::class, 'health']);
+Route::get('/ready', [HealthController::class, 'ready']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 

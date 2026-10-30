@@ -2,12 +2,15 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\ResetsPrimaryKeySequence;
 use Illuminate\Database\Seeder;
 use App\Models\SessionSets;
 use Illuminate\Support\Facades\DB;
 
 class SessionSetSeeder extends Seeder
 {
+    use ResetsPrimaryKeySequence;
+
     /**
      * Run the database seeds.
      */
@@ -58,7 +61,7 @@ class SessionSetSeeder extends Seeder
 
         // Ajustar la secuencia de PostgreSQL para evitar errores de duplicidad en nuevos registros
         $maxId = SessionSets::max('id') ?? 1;
-        DB::statement("SELECT setval('session_sets_id_seq', {$maxId});");
+        $this->resetPrimaryKeySequence('session_sets', 'session_sets_id_seq', $maxId);
 
         $this->command->info('¡Series de entrenamiento cargadas exitosamente desde el CSV!');
     }

@@ -2,12 +2,15 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\ResetsPrimaryKeySequence;
 use Illuminate\Database\Seeder;
 use App\Models\RoutineDay;
 use Illuminate\Support\Facades\DB;
 
 class RoutineDaySeeder extends Seeder
 {
+    use ResetsPrimaryKeySequence;
+
     /**
      * Run the database seeds.
      */
@@ -54,7 +57,7 @@ class RoutineDaySeeder extends Seeder
 
         // Ajustar la secuencia de PostgreSQL para evitar colisiones de autoincremento en el id
         $maxId = RoutineDay::max('id') ?? 1;
-        DB::statement("SELECT setval('routine_days_id_seq', {$maxId});");
+        $this->resetPrimaryKeySequence('routine_days', 'routine_days_id_seq', $maxId);
 
         $this->command->info('¡Días de rutina cargados exitosamente desde el CSV!');
     }

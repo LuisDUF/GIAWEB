@@ -2,12 +2,17 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\NormalizesCsvTimestamps;
+use Database\Seeders\Concerns\ResetsPrimaryKeySequence;
 use Illuminate\Database\Seeder;
 use App\Models\WorkoutSession;
 use Illuminate\Support\Facades\DB;
 
 class WorkoutSessionSeeder extends Seeder
 {
+    use NormalizesCsvTimestamps;
+    use ResetsPrimaryKeySequence;
+
     public function run(): void
     {
         $filePath = database_path('seeders/data/workout_sessions.csv');
@@ -55,11 +60,11 @@ class WorkoutSessionSeeder extends Seeder
                 'id'               => (int) $row['id'],
                 'user_id'          => $userId,
                 'routine_day_id'   => $routineDayId,
-                'date'             => !empty($row['date']) ? $row['date'] : now(),
+                'date'             => $this->csvTimestamp($row['date'] ?? null),
                 'duration_minutes' => !empty($row['duration_minutes']) ? (int) $row['duration_minutes'] : null,
                 'notes'            => !empty($row['notes']) ? trim($row['notes']) : null,
-                'created_at'       => !empty($row['created_at']) ? $row['created_at'] : now(),
-                'updated_at'       => !empty($row['updated_at']) ? $row['updated_at'] : now(),
+                'created_at'       => $this->csvTimestamp($row['created_at'] ?? null),
+                'updated_at'       => $this->csvTimestamp($row['updated_at'] ?? null),
             ];
 
             if (count($sessions) >= $batchSize) {
@@ -76,7 +81,7 @@ class WorkoutSessionSeeder extends Seeder
 
         // Ajustar secuencia de ID en PostgreSQL
         $maxId = WorkoutSession::max('id') ?? 1;
-        DB::statement("SELECT setval('workout_sessions_id_seq', {$maxId});");
+        $this->resetPrimaryKeySequence('workout_sessions', 'workout_sessions_id_seq', $maxId);
 
         $this->command->info('¡Sesiones de entrenamiento cargadas exitosamente!');
     }

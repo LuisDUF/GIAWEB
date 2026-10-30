@@ -3,8 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Routine;
-use App\Models\ActivityLog;
-use Illuminate\Support\Facades\Log;
+use App\Services\ActivityOutboxService;
 
 class RoutineObserver
 {
@@ -47,20 +46,6 @@ class RoutineObserver
      */
     private function logActivity(string $action, Routine $routine, array $changes): void
     {
-        try {
-            ActivityLog::create([
-                'timestamp'  => now()->toIso8601String(),
-                'user_id'    => auth()->id() ?? $routine->user_id, // Usuario autenticado o creador de la rutina
-                'action'     => $action,
-                'entity'     => 'routines',
-                'entity_id'  => $routine->id,
-                'changes'    => $changes,
-                'ip_address' => request()->ip() ?? '127.0.0.1',
-                'user_agent' => request()->userAgent() ?? 'CLI/System',
-            ]);
-        } catch (\Throwable $e) {
-            // Manejo de resiliencia según rúbrica: Si MongoDB falla, no rompe la transacción en PostgreSQL
-            Log::error("Fallo al registrar bitácora en MongoDB para Routine ID {$routine->id}: " . $e->getMessage());
-        }
+        app(ActivityOutboxService::class)->record($action, $routine, 'routines', $changes);
     }
 }

@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: backend-config }
+data:
+  APP_ENV: development
+  APP_DEBUG: "true"
+  APP_URL: https://api.dev.local:8443
+  CORS_ALLOWED_ORIGINS: https://app.dev.local:8443
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fitness
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+    - hosts: [app.dev.local, api.dev.local]
+      secretName: fitness-dev-tls
+  rules:
+    - host: app.dev.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: frontend, port: { name: http } } }
+    - host: api.dev.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: backend, port: { name: http } } }
