@@ -9,8 +9,8 @@ patchesStrategicMerge:
   - patch.yaml
 images:
   - name: proyecto-kubernet/frontend
-    newName: proyecto-kubernet/frontend
-    newTag: REPLACE_WITH_APPROVED_IMMUTABLE_TAG
+    newName: host.minikube.internal:5000/fitness/frontend
+    digest: sha256:c82628dafbef19db8e610ed268bc5cffed55848cc1e50d97d2c4cf4a174787b7
   - name: proyecto-kubernet/backend
-    newName: proyecto-kubernet/backend
-    newTag: REPLACE_WITH_APPROVED_IMMUTABLE_TAG
+    newName: host.minikube.internal:5000/fitness/backend
+    digest: sha256:f0687c607f4dadc36ca558a1f96bb5c802b824fd6b71a4047688359491564566
