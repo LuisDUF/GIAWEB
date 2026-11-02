@@ -43,6 +43,16 @@ Repita para producción, cambiando contexto, namespace y valores. Cree además l
 TLS como `fitness-dev-tls` y `fitness-prod-tls`. Puede usar una CA local para laboratorio;
 documente su emisor y fecha de vencimiento.
 
+## Expiración de tokens de Sanctum
+
+El ConfigMap `backend-config` establece `SANCTUM_EXPIRATION: "60"` para desarrollo y
+producción. Los tokens personales emitidos por inicio de sesión o registro caducan 60 minutos
+después de emitirse; la caducidad se guarda también en `personal_access_tokens.expires_at`.
+Los clientes deben volver a autenticarse cuando reciban una respuesta `401 Unauthorized` por
+token vencido. Para cambiar la política, ajuste el valor en
+`infra/base/backend/config.yaml`, aplique el overlay correspondiente y reinicie `backend` y
+`backend-worker` para recargar la configuración.
+
 ## TLS local
 
 Genere una CA y un certificado distinto por ambiente fuera del repositorio. Cada certificado debe
@@ -104,10 +114,12 @@ kubectl --context proyecto-prof -n fitness-prod get pods,svc,pvc,hpa
 
 ## Recuperación y respaldos
 
-Los CronJob guardan dumps en el PVC `database-backups`, distinto a los PVC de origen. Para una
-prueba válida, restaure a un namespace o instancia aislada, compare conteos, claves/índices y
-pruebe la app contra la restauración. Objetivo inicial: RPO 24 h y RTO 30 min; mida y reporte
-el resultado real. No afirme recuperación entre nodos si la StorageClass usa volúmenes locales.
+Los CronJobs generan dumps consistentes, un checksum SHA-256 y los envían con `rclone` a un
+almacenamiento de objetos cifrado, separado de los PVC de origen. El procedimiento reproducible,
+los Secrets requeridos, la restauración aislada y el formato de evidencia están en
+[backups-and-recovery.md](backups-and-recovery.md). El objetivo inicial es RPO de 24 h y RTO de
+30 min; registre el resultado real de cada prueba y no afirme recuperación entre nodos si la
+StorageClass usa volúmenes locales.
 
 ## Rollback e incidente MongoDB
 

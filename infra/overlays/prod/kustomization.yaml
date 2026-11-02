@@ -13,4 +13,4 @@ images:
     digest: sha256:c82628dafbef19db8e610ed268bc5cffed55848cc1e50d97d2c4cf4a174787b7
   - name: proyecto-kubernet/backend
     newName: host.minikube.internal:5000/fitness/backend
-    digest: sha256:f0687c607f4dadc36ca558a1f96bb5c802b824fd6b71a4047688359491564566
+    digest: sha256:4c725593a847e0e0cea1a38e25e679ee2d5d3a7e8b64685fc29de73837799d18

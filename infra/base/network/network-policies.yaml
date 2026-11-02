@@ -69,3 +69,40 @@ spec:
               - key: app.kubernetes.io/name
                 operator: In
                 values: [backend, backend-worker, backend-migrate, backup]
+---
+# The backups leave the Pod only through its encrypted rclone remote.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: allow-backup-object-storage }
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values: [backup, backup-restore]
+  policyTypes: [Egress]
+  egress:
+    - to: [{ ipBlock: { cidr: 0.0.0.0/0 } }]
+      ports:
+        - { protocol: TCP, port: 443 }
+        - { protocol: TCP, port: 9000 }
+---
+# Prometheus runs in a separate namespace. Exporter metrics are the only
+# application-namespace endpoints it may scrape across the namespace boundary.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: allow-observability-scrape }
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values: [mysql-exporter, mongodb-exporter]
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: observability }
+      ports:
+        - { protocol: TCP, port: 9104 }
+        - { protocol: TCP, port: 9216 }

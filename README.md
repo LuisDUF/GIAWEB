@@ -10,13 +10,15 @@ Minikube; producción se conserva como overlay para un clúster independiente.
 | Ambiente | Contexto | Namespace | URLs |
 | --- | --- | --- | --- |
 | Desarrollo | `minikube` | `fitness-dev` | `https://app.dev.local`, `https://api.dev.local` |
-| Producción de laboratorio | `proyecto-prod` | `fitness-prod` | `https://app.prod.local`, `https://api.prod.local` |
+| Producción de laboratorio | `proyecto-prof` | `fitness-prod` | `https://app.prod.local`, `https://api.prod.local` |
 
 No se comparten PVC, Secrets, datos ni credenciales entre ambos clústeres.
 
 ## Inicio rápido
 
-1. Lea [arquitectura](docs/architecture.md) y [secrets](docs/secrets-and-deployment.md).
+1. Lea [arquitectura](docs/architecture.md), [secrets](docs/secrets-and-deployment.md) y el
+   procedimiento de [respaldos y restauración](docs/backups-and-recovery.md) y
+   el [D09: plan de respaldos, restauración y continuidad](docs/d09-plan-respaldos-restauracion-continuidad.md).
 2. Inicie Minikube con driver Docker y confirme `kubectl --context minikube get nodes`.
 3. Construya e importe las imágenes al runtime de Minikube, según la guía de despliegue.
 4. Cree los Secrets exclusivamente en el namespace del ambiente.

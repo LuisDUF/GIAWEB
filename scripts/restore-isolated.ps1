@@ -4,12 +4,15 @@ param(
     [Parameter(Mandatory)] [ValidatePattern('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$')] [string] $SourceNamespace,
     [Parameter(Mandatory)] [ValidateSet('mysql', 'mongodb')] [string] $Database,
     [Parameter(Mandatory)] [ValidatePattern('^[A-Za-z0-9._-]+$')] [string] $BackupFile,
+    [ValidatePattern('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$')] [string] $RecoveryNodeName,
     [ValidatePattern('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$')] [string] $TargetNamespace = "fitness-restore-$(Get-Date -Format 'yyyyMMddHHmmss')"
 )
 
 $ErrorActionPreference = 'Stop'
 $remoteObject = "backup-crypt:fitness/$SourceNamespace/$Database/$BackupFile"
 $checksumObject = "$remoteObject.sha256"
+$workloadNodePlacement = if ($RecoveryNodeName) { "      nodeName: $RecoveryNodeName" } else { '' }
+$jobNodePlacement = if ($RecoveryNodeName) { "      nodeName: $RecoveryNodeName" } else { '' }
 
 function Apply-Yaml([string] $yaml) {
     $yaml | kubectl --context $Context -n $TargetNamespace apply -f -
@@ -17,9 +20,18 @@ function Apply-Yaml([string] $yaml) {
 }
 
 # The target namespace is deliberately separate. Do not point this script at the
-# application namespace or at the production StatefulSets.
-kubectl --context $Context create namespace $TargetNamespace --dry-run=client -o yaml | kubectl --context $Context apply -f -
-if ($LASTEXITCODE -ne 0) { throw 'Could not create the isolated restore namespace.' }
+# application namespace or at the production StatefulSets. Applying Restricted
+# here makes the recovery path subject to the same Pod Security baseline.
+Apply-Yaml @"
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: $TargetNamespace
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+"@
 
 # Secrets are deliberately not copied by this script. Before running it, create
 # backup-object-storage (read-only object-store credentials + rclone.conf) and
@@ -28,6 +40,56 @@ foreach ($secret in 'backup-object-storage', 'restore-target') {
     kubectl --context $Context -n $TargetNamespace get secret $secret | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "Missing Secret '$secret' in namespace '$TargetNamespace'." }
 }
+
+# A recovery namespace starts default-deny. Only the restore database, its Job,
+# cluster DNS and the encrypted object-store endpoint can communicate. The
+# policy is created before the workloads so a restore cannot transiently run
+# with unrestricted pod traffic.
+Apply-Yaml @"
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny }
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: allow-dns }
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
+          podSelector: { matchLabels: { k8s-app: kube-dns } }
+      ports:
+        - { protocol: UDP, port: 53 }
+        - { protocol: TCP, port: 53 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: allow-restore-components }
+spec:
+  podSelector: { matchLabels: { app.kubernetes.io/name: backup-restore } }
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - podSelector: { matchLabels: { app.kubernetes.io/name: backup-restore } }
+      ports:
+        - { protocol: TCP, port: 3306 }
+        - { protocol: TCP, port: 27017 }
+  egress:
+    - to:
+        - podSelector: { matchLabels: { app.kubernetes.io/name: backup-restore } }
+      ports:
+        - { protocol: TCP, port: 3306 }
+        - { protocol: TCP, port: 27017 }
+    - to: [{ ipBlock: { cidr: 0.0.0.0/0 } }]
+      ports:
+        - { protocol: TCP, port: 443 }
+        - { protocol: TCP, port: 9000 }
+"@
 
 if ($Database -eq 'mysql') {
     Apply-Yaml @"
@@ -47,6 +109,7 @@ spec:
   template:
     metadata: { labels: { app.kubernetes.io/name: backup-restore, app.kubernetes.io/component: mysql } }
     spec:
+$workloadNodePlacement
       automountServiceAccountToken: false
       securityContext: { fsGroup: 999, seccompProfile: { type: RuntimeDefault } }
       containers:
@@ -81,6 +144,7 @@ spec:
   template:
     metadata: { labels: { app.kubernetes.io/name: backup-restore, app.kubernetes.io/component: mongodb } }
     spec:
+$workloadNodePlacement
       automountServiceAccountToken: false
       securityContext: { fsGroup: 999, seccompProfile: { type: RuntimeDefault } }
       containers:
@@ -109,6 +173,7 @@ spec:
   template:
     metadata: { labels: { app.kubernetes.io/name: backup-restore } }
     spec:
+$jobNodePlacement
       restartPolicy: Never
       automountServiceAccountToken: false
       securityContext: { fsGroup: 999, seccompProfile: { type: RuntimeDefault } }

@@ -20,6 +20,9 @@ spec:
   hard:
     requests.cpu: "4"
     requests.memory: 8Gi
-    limits.cpu: "8"
+    # Supports the production HPA ceiling (6 backend replicas) and one
+    # maxSurge replica during a zero-unavailable rolling update. CPU requests
+    # remain capped at 4 so scheduling stays within the lab capacity budget.
+    limits.cpu: "14"
     limits.memory: 16Gi
     persistentvolumeclaims: "8"

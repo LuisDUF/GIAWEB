@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
+use Laravel\Sanctum\PersonalAccessToken;
 use Tests\TestCase;
 
 class AuthApiTest extends TestCase
@@ -30,6 +31,7 @@ class AuthApiTest extends TestCase
         $user = User::where('email', 'ana@example.test')->firstOrFail();
         $this->assertTrue(Hash::check('secret-pass', $user->password));
         $this->assertDatabaseCount('personal_access_tokens', 1);
+        $this->assertAccessTokenExpiresAfterTheConfiguredLifetime();
     }
 
     public function test_registration_rejects_an_existing_email(): void
@@ -78,6 +80,7 @@ class AuthApiTest extends TestCase
             ->assertJsonStructure(['success', 'user']);
 
         $this->assertDatabaseCount('personal_access_tokens', 1);
+        $this->assertAccessTokenExpiresAfterTheConfiguredLifetime();
     }
 
     public function test_protected_user_endpoint_requires_authentication(): void
@@ -103,5 +106,18 @@ class AuthApiTest extends TestCase
         $this->getJson('/api/v1/admin/routines')
             ->assertOk()
             ->assertJsonStructure(['data', 'current_page', 'per_page']);
+    }
+
+    private function assertAccessTokenExpiresAfterTheConfiguredLifetime(): void
+    {
+        $token = PersonalAccessToken::latest('id')->firstOrFail();
+
+        $this->assertNotNull($token->expires_at);
+        $this->assertTrue(
+            $token->expires_at->between(
+                now()->addMinutes((int) config('sanctum.expiration') - 1),
+                now()->addMinutes((int) config('sanctum.expiration') + 1)
+            )
+        );
     }
 }

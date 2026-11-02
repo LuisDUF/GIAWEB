@@ -59,6 +59,12 @@ reparte el backend entre workers; un PDB mantiene al menos una réplica disponib
 disrupciones voluntarias. Un solo control plane, un Ingress y cada StatefulSet de una réplica
 siguen siendo puntos únicos de fallo y se registran como limitaciones académicas.
 
+El `ResourceQuota` reserva un máximo de 4 CPU en *requests* y permite hasta 14 CPU en
+*limits*. Esta diferencia es intencional: el HPA puede alcanzar seis réplicas de backend y
+un Deployment puede crear una réplica adicional durante un rollout con `maxSurge: 1`, sin
+que una cuota de límites bloquee una actualización de disponibilidad cero. Los límites no
+representan CPU física garantizada; se deben vigilar con las métricas del clúster.
+
 ## Red
 
 El único tráfico publicado es TCP 443 hacia el Ingress. Las NetworkPolicy aplican denegación
