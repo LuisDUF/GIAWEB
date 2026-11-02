@@ -141,7 +141,6 @@ El Secret `backup-object-storage` contiene el `rclone.conf` y debe crearse fuera
 namespace. Las restauraciones se ejecutan únicamente en un namespace nuevo y aislado. Consulte:
 
 - [Respaldos y restauración](docs/backups-and-recovery.md)
-- [Plan D09 con RPO/RTO y resultados](docs/d09-plan-respaldos-restauracion-continuidad.md)
 - [Bitácora de ejecución](docs/backup-execution-log.md)
 
 Un PVC heredado llamado `database-backups` puede permanecer en clústeres creados con versiones
