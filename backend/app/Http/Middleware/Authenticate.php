@@ -12,6 +12,8 @@ class Authenticate extends Middleware
      */
     protected function redirectTo(Request $request): ?string
     {
-        return $request->expectsJson() ? null : route('login');
+        // Las rutas de API nunca deben redirigir a una ruta web inexistente.
+        // Sin token deben conservar la respuesta 401 de Sanctum en formato JSON.
+        return ($request->expectsJson() || $request->is('api/*')) ? null : route('login');
     }
 }

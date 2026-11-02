@@ -1,0 +1,763 @@
+---
+import Racha from "../components/analiticas/Racha.astro";
+import Card from "../components/Card.astro";
+import Ejercicio from "../components/Ejercicio.astro";
+import Registro from "../components/Registro.astro";
+import ProtectedLayout from "../layouts/ProtectedLayout.astro";
+---
+
+<ProtectedLayout>
+
+    <div class="opacity-100 transition ease-in-out duration-500" id="ejercicios-registro">
+        <div class="w-full px-10 ">
+            <div class="bg-secondary rounded-3xl overflow-x-auto scrollbar-thumb-blue shadow-inner shadow-black ">
+                <div id="tabla-ejercicios" class="p-10 select-none py-4 gap-6 rounded-3xl grid grid-flow-col grid-rows-1 w-max"></div>
+
+            </div>
+        </div>
+
+        <div class="grid grid-cols-5 grid-rows-1 gap-0">
+            <div class="col-span-2">
+
+                <div class="grid grid-cols-1 items-center justify-center">
+                    <Card
+                        titulo="Ejercicio"
+                        subtitulo = "<div class='mt-6'></div>"
+                        class=""
+                        classContenido="md:min-w-[30rem] max-w-[20rem] "
+                    >
+                        <Ejercicio/>
+                    </Card>
+                </div>
+
+
+            </div>
+            <div class="col-span-3 col-start-3">
+
+
+                <div id="card-de-registro" class="card-de-registro grid grid-cols-1 items-center justify-center">
+                    <Card
+                        titulo=""
+                        subtitulo = "<div class='mt-6'></div>"
+                        class=""
+                        classTitulo="w-[]"
+                        classContenido="w-[80%] "
+                    >
+                        <Registro/>
+                    </Card>
+                </div>
+
+            </div>
+
+
+
+        </div>
+
+        <div class="w-full flex justify-center select-none">
+            <div class="min-w-96 grid grid-cols-2 mt-20 gap-4 justify-center items-center text-center">
+            <div class="bg-red p-4 text-center text-white text-2xl rounded shadow-md shadow-black poetsen-one-regular hover:cursor-pointer hover:shadow-red hover:text-shadow-lg hover:-translate-y-2 transition duration-800 ease-in-out ">
+                    Saltar
+                </div>
+                <button id="siguiente-ejercicio" type="button" class="bg-blue p-4 text-center text-white text-2xl rounded shadow-md shadow-black poetsen-one-regular hover:cursor-pointer hover:shadow-blue hover:text-shadow-lg hover:-translate-y-2 transition duration-800 ease-in-out ">
+                    Siguiente
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="div-notas" class="hidden opacity-0 transition ease-in-out duration-500">
+            <div class="grid grid-cols-1 items-center justify-center text-white text-2xl poetsen-one-regular">
+                <Card
+                    titulo="Notas"
+                    subtitulo = "<div id='btn-finalizar' class='hover:cursor-pointer hover:underline'>Finalizar</div>"
+                    class=""
+                    classContenido="md:min-w-[100rem] max-w-[20rem] "
+                >
+                    <div >
+                        <button id="exitNotas" type="button" aria-label="Volver a los ejercicios" class="rounded-full hover:shadow-xl hover:shadow-black hover:cursor-pointer transition duration-200 ease-in-out hover:-translate-y-1">
+                            <svg class="lucide lucide-chevron-left preview-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                        </button>
+                    </div>
+                    <textarea class="h-full mt-10 text-4xl text-black p-4 rounded-xl" placeholder="Escribe tus notas" name="" id="area-notas"></textarea>
+                </Card>
+            </div>
+    </div>
+    
+<script>
+    const apiUrl = (import.meta.env.PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api')
+        .replace(/\/$/, '');
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { Timer } from 'three/addons/misc/Timer.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    type EjercicioRutina = {
+        exercise_id: number;
+        exercise?: {
+            name?: string | null;
+        } | null;
+    };
+
+    type SerieRegistrada = {
+        set_number: number;
+        reps: number | string;
+        weight_kg: number | string;
+        rpe?: number;
+        set_type?: string;
+    };
+
+    type EjercicioRegistrado = {
+        exercise_id: number;
+        exercise?: {
+            name?: string | null;
+        } | null;
+        session_sets?: SerieRegistrada[] | null;
+    };
+
+    type RegistroEntrenamiento = {
+        notes?: string | null;
+        routine_day?: {
+            routine_day_exercises?: EjercicioRutina[] | null;
+        } | null;
+        session_exercises?: EjercicioRegistrado[] | null;
+    };
+
+    // 3D viewer globals
+let scene, camera, renderer, model3D, mixer;
+let ejercicioPendiente3D = null;
+const timer = new Timer();
+const animationsMap = new Map();
+const allowedVisibleParts = [
+    "cabeza", "torso", "shorts",
+    "brazo2", "pierna2", "pantorrilla2",
+    "pies", "rodilla", "mano",
+    "ojos1", "nariz", "orejas", "pelo",
+];
+
+let tiempoInicio = Date.now();
+    const urlParams = new URLSearchParams(window.location.search);
+    const idR = urlParams.get('idR') || urlParams.get('idr');
+    const idSession = urlParams.get('id');
+
+    function mostrarEjercicios(ejercicios: EjercicioRutina[]): HTMLButtonElement[] {
+        const tabla = document.getElementById('tabla-ejercicios');
+        if (!tabla) throw new Error('No se encontró la tabla de ejercicios.');
+
+        tabla.replaceChildren();
+
+        if (ejercicios.length === 0) {
+            const mensaje = document.createElement('p');
+            mensaje.className = 'text-white';
+            mensaje.textContent = 'Esta sesión no tiene ejercicios de rutina.';
+            tabla.appendChild(mensaje);
+            return [];
+        }
+
+        return ejercicios.map((ejercicioRutina, indice) => {
+            const boton = document.createElement('button');
+            boton.type = 'button';
+            boton.className = 'text-center p-4 bg-blue text-white text-lg rounded shadow-md shadow-black poetsen-one-regular hover:cursor-pointer hover:shadow-blue hover:text-shadow-lg hover:-translate-y-2 transition duration-800 ease-in-out';
+            boton.textContent = ejercicioRutina.exercise?.name ?? 'Ejercicio';
+            boton.dataset.exerciseIndex = String(indice);
+            tabla.appendChild(boton);
+            return boton;
+        });
+    }
+
+    async function cargarRegistro() {
+        const token = sessionStorage.getItem('auth_token');
+        const targetId = idSession || idR;
+
+        if (!targetId || !/^\d+$/.test(targetId)) {
+            console.error('No se recibió un ID válido en la URL.');
+            return;
+        }
+
+        if (!token) {
+            console.error('No se encontró la sesión. Inicia sesión nuevamente.');
+            return;
+        }
+
+        const endpoint = idR 
+            ? `${apiUrl}/v1/routine/${encodeURIComponent(idR)}`
+            : `${apiUrl}/v1/workout-sessions/${encodeURIComponent(targetId)}`;
+
+        const response = await fetch(endpoint, {
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`No se pudo obtener la información (HTTP ${response.status}).`);
+        }
+
+        const data = await response.json();
+        
+        let registro: RegistroEntrenamiento;
+        let routineDayId: number;
+
+        if (idR) {
+            routineDayId = Number(idR);
+            registro = {
+                notes: '',
+                routine_day: {
+                    routine_day_exercises: data.routine_day_exercises || data.exercises || []
+                },
+                session_exercises: []
+            };
+        } else {
+            routineDayId = data.routine_day_id || 1;
+            registro = data;
+        }
+
+        const areaNotas = document.getElementById('area-notas');
+        if (areaNotas instanceof HTMLTextAreaElement) {
+            areaNotas.value = registro.notes ?? '';
+        }
+
+        const ejercicios = registro.routine_day?.routine_day_exercises ?? [];
+        const botonesEjercicio = mostrarEjercicios(ejercicios);
+        const listaSeries = document.getElementById('series-list');
+        const plantillaSerie = document.getElementById('serie-template');
+        if (!(listaSeries instanceof HTMLElement) || !(plantillaSerie instanceof HTMLTemplateElement)) {
+            throw new Error('No se encontró la lista o plantilla de series.');
+        }
+
+        const tituloEjercicio = document.querySelector('#card-de-registro #que-es-card h1');
+
+        const seccionEjercicios = document.getElementById('ejercicios-registro');
+        const seccionNotas = document.getElementById('div-notas');
+        const botonSiguiente = document.getElementById('siguiente-ejercicio');
+        const botonSalirNotas = document.getElementById('exitNotas');
+        const botonFinalizar = document.getElementById('btn-finalizar');
+
+        if (!(seccionEjercicios instanceof HTMLElement)
+            || !(seccionNotas instanceof HTMLElement)
+            || !(botonSiguiente instanceof HTMLButtonElement)
+            || !(botonSalirNotas instanceof HTMLButtonElement)) {
+            throw new Error('Faltan elementos de navegación en la interfaz.');
+        }
+
+        const transicionesPendientes = new WeakMap<HTMLElement, number>();
+
+        function cambiarVisibilidadGradualmente(elemento: HTMLElement, mostrar: boolean) {
+            const transicionPendiente = transicionesPendientes.get(elemento);
+            if (transicionPendiente !== undefined) {
+                window.clearTimeout(transicionPendiente);
+                transicionesPendientes.delete(elemento);
+            }
+
+            if (mostrar) {
+                elemento.classList.remove('hidden');
+                elemento.classList.add('opacity-0');
+                elemento.classList.remove('opacity-100');
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        if (!elemento.classList.contains('hidden')) {
+                            elemento.classList.remove('opacity-0');
+                            elemento.classList.add('opacity-100');
+                        }
+                    });
+                });
+                return;
+            }
+
+            elemento.classList.remove('opacity-100');
+            elemento.classList.add('opacity-0');
+            const timeout = window.setTimeout(() => {
+                if (elemento.classList.contains('opacity-0')) {
+                    elemento.classList.add('hidden');
+                }
+                transicionesPendientes.delete(elemento);
+            }, 500);
+            transicionesPendientes.set(elemento, timeout);
+        }
+
+        let indiceSeleccionado: number | null = null;
+
+        function guardarEjercicioActual() {
+            if (indiceSeleccionado === null) return;
+
+            const ejercicioRutina = ejercicios[indiceSeleccionado];
+            if (!ejercicioRutina) return;
+
+            registro.session_exercises ??= [];
+            let ejercicioRegistrado = registro.session_exercises.find(
+                (ejercicio) => ejercicio.exercise_id === ejercicioRutina.exercise_id
+            );
+            if (!ejercicioRegistrado) {
+                ejercicioRegistrado = {
+                    exercise_id: ejercicioRutina.exercise_id,
+                    exercise: ejercicioRutina.exercise,
+                    session_sets: [],
+                };
+                registro.session_exercises.push(ejercicioRegistrado);
+            }
+
+            const seriesAnteriores = ejercicioRegistrado.session_sets ?? [];
+            ejercicioRegistrado.session_sets = Array.from(
+                listaSeries.querySelectorAll<HTMLElement>('.serie-item'),
+                (fila, indice): SerieRegistrada => {
+                    const inputRepeticiones = fila.querySelector('.input-reps');
+                    const inputPeso = fila.querySelector('.input-peso');
+                    const unidad = fila.querySelector('.unit-text');
+                    
+                    if (!(inputRepeticiones instanceof HTMLInputElement)
+                        || !(inputPeso instanceof HTMLInputElement)
+                        || !(unidad instanceof HTMLElement)) {
+                        throw new Error('No se encontraron los campos de una serie.');
+                    }
+
+                    const pesoIngresado = inputPeso.value === '' ? '' : Number(inputPeso.value);
+                    const pesoKg = unidad.textContent?.trim().toUpperCase() === 'LB'
+                        && pesoIngresado !== ''
+                        ? pesoIngresado / 2.20462
+                        : pesoIngresado;
+
+                    return {
+                        ...seriesAnteriores[indice],
+                        set_number: indice + 1,
+                        reps: inputRepeticiones.value === '' ? '' : Number(inputRepeticiones.value),
+                        weight_kg: pesoKg,
+                        rpe: 8,
+                        set_type: fila.getAttribute('data-level') === 'child' ? 'drop' : 'normal'
+                    };
+                }
+            ); // <-- Aquí faltaba cerrar el paréntesis del Array.from
+        }
+
+        function mostrarEjercicio(indice: number) {
+            const ejercicioRutina = ejercicios[indice];
+            if (!ejercicioRutina) return;
+
+            const ejercicioRegistrado = registro.session_exercises?.find(
+                (ejercicio) => ejercicio.exercise_id === ejercicioRutina.exercise_id
+          );
+            const nombreEjercicio = ejercicioRutina.exercise?.name
+                ?? ejercicioRegistrado?.exercise?.name
+                ?? 'Ejercicio';
+            
+            if (tituloEjercicio instanceof HTMLElement) {
+                tituloEjercicio.textContent = nombreEjercicio;
+            }
+
+            const series = ejercicioRegistrado?.session_sets
+                ?.slice()
+                .sort((serieA, serieB) => serieA.set_number - serieB.set_number) ?? [];
+            
+            listaSeries.replaceChildren();
+
+            if (series.length === 0) {
+                const clone = plantillaSerie.content.cloneNode(true) as HTMLElement;
+                const numeroDiv = clone.querySelector('.serie-numero');
+                if (numeroDiv) numeroDiv.textContent = "1.";
+                listaSeries.appendChild(clone);
+            } else {
+                series.forEach((serie, numeroIndice) => {
+                    const clone = plantillaSerie.content.cloneNode(true) as HTMLElement;
+                    const fila = clone.querySelector('.serie-item') as HTMLElement;
+                    const numero = clone.querySelector('.serie-numero');
+                    const inputRepeticiones = clone.querySelector('.input-reps') as HTMLInputElement;
+                    const inputPeso = clone.querySelector('.input-peso') as HTMLInputElement;
+
+                    if (numero && inputRepeticiones && inputPeso) {
+                        if (serie.set_type === 'drop') {
+                            fila.setAttribute('data-level', 'child');
+                            fila.classList.add('ml-10', 'scale-95', 'opacity-90');
+                            numero.textContent = "↳";
+                            numero.classList.add('text-2xl');
+                            const btnDrop = clone.querySelector('.container-btn-drop');
+                            if (btnDrop) btnDrop.remove();
+                        } else {
+                            fila.setAttribute('data-level', 'parent');
+                            numero.textContent = `${numeroIndice + 1}.`;
+                        }
+                      inputRepeticiones.value = String(serie.reps ?? '');
+                      inputPeso.value = String(serie.weight_kg ?? '');
+                  }
+                  listaSeries.appendChild(clone);
+            });
+        }
+
+          botonesEjercicio.forEach((boton, botonIndice) => {
+              const seleccionado = botonIndice === indice;
+              boton.disabled = seleccionado;
+              boton.setAttribute('aria-pressed', String(seleccionado));
+              boton.classList.toggle('bg-blue', !seleccionado);
+              boton.classList.toggle('bg-primary', seleccionado);
+              boton.classList.toggle('hover:cursor-pointer', !seleccionado);
+              boton.classList.toggle('opacity-70', seleccionado);
+        });
+
+          indiceSeleccionado = indice;
+      }
+
+      botonesEjercicio.forEach((boton) => {
+          boton.addEventListener('click', () => {
+              const indice = Number(boton.dataset.exerciseIndex);
+              if (!Number.isInteger(indice) || indice === indiceSeleccionado) return;
+
+              guardarEjercicioActual();
+              mostrarEjercicio(indice);
+              // Initialise the 3D viewer (first click creates the scene)
+              const ejercicio = ejercicios[indice];
+              if (ejercicio) {
+                  ejercicioPendiente3D = ejercicio;
+                  initThreeViewer();
+                  actualizarModelo3D(ejercicio);
+                  const visor = document.getElementById('contenedor-visor-3d');
+                  if (visor) visor.classList.remove('hidden');
+              }
+        });
+    });
+
+      botonSiguiente.addEventListener('click', () => {
+          if (indiceSeleccionado === null) return;
+
+          guardarEjercicioActual();
+          const siguienteIndice = indiceSeleccionado + 1;
+          if (siguienteIndice < ejercicios.length) {
+              mostrarEjercicio(siguienteIndice);
+              return;
+        }
+
+        cambiarVisibilidadGradualmente(seccionEjercicios, false);
+        cambiarVisibilidadGradualmente(seccionNotas, true);
+    });
+
+      botonSalirNotas.addEventListener('click', () => {
+          cambiarVisibilidadGradualmente(seccionNotas, false);
+          cambiarVisibilidadGradualmente(seccionEjercicios, true);
+    });
+
+    // Evento al pulsar "Finalizar" para enviar la petición POST o PUT al backend
+    botonFinalizar?.addEventListener('click', async () => {
+          guardarEjercicioActual();
+
+          const areaNotas = document.getElementById('area-notas');
+          const notasTexto = areaNotas instanceof HTMLTextAreaElement ? areaNotas.value : '';
+
+          const duracionMinutos = Math.max(1, Math.round((Date.now() - tiempoInicio) / 60000));
+          const ahora = new Date();
+          const fechaFormateada = ahora.toISOString().slice(0, 19).replace('T', ' ');
+
+          const payload = {
+              routine_day_id: Number(idR || routineDayId || 1),
+              date: fechaFormateada,
+              duration_minutes: duracionMinutos,
+              notes: notasTexto,
+              exercises: (registro.session_exercises ?? []).map((ex, index) => ({
+                  exercise_id: ex.exercise_id,
+                  order_index: index + 1,
+                  sets: (ex.session_sets ?? []).map((set, sIndex) => ({
+                      set_number: sIndex + 1,
+                      weight_kg: Number(set.weight_kg) || 0,
+                      reps: Number(set.reps) || 0,
+                      rpe: set.rpe || 8,
+                      set_type: set.set_type || 'normal'
+                  }))
+              }))
+          };
+
+          console.log("=== ENVIANDO PAYLOAD AL SERVIDOR ===");
+          console.log(JSON.stringify(payload, null, 2));
+
+          try {
+            const endpointUrl = idSession 
+                ? `${apiUrl}/v1/workout-sessions/${idSession}` // Laravel lo recibe como PUT y entra a saveCompleteSession($request, $id)
+                : `${apiUrl}/v1/workout-sessions`;            // Laravel lo recibe como POST y entra a saveCompleteSession($request)
+
+            const methodType = idSession ? 'PUT' : 'POST';
+              const response = await fetch(endpointUrl, {
+                  method: methodType,
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                  },
+                  body: JSON.stringify(payload)
+              });
+
+              if (!response.ok) {
+                  const errorData = await response.json();
+                  console.error("Error devuelto por el servidor:", errorData);
+                  alert("Hubo un error al guardar el entrenamiento. Revisa la consola.");
+                  return;
+              }
+
+              const resultado = await response.json();
+              console.log("¡Guardado exitoso!", resultado);
+              alert("¡Entrenamiento guardado correctamente!");
+              
+              // Opcional: Redirigir al usuario al dashboard o lista de sesiones
+              // window.location.href = '/dashboard';
+
+      } catch (error) {
+          console.error("Error de red al enviar el entrenamiento:", error);
+          alert("Error de conexión con el servidor.");
+      }
+    });
+
+      if (ejercicios.length > 0) {
+          mostrarEjercicio(0);
+          // Also initialise the 3D viewer with the first exercise
+          const primerEjercicio = ejercicios[0];
+          if (primerEjercicio) {
+              ejercicioPendiente3D = primerEjercicio;
+              initThreeViewer();
+              actualizarModelo3D(primerEjercicio);
+              const visor = document.getElementById('contenedor-visor-3d');
+              if (visor) visor.classList.remove('hidden');
+          }
+      }
+  }
+
+    function agregarNuevaSerie() {
+      if (!serieTemplate || !seriesList) return;
+      const parentSeries = seriesList.querySelectorAll('.serie-item[data-level="parent"]');
+      const nuevoNumero = parentSeries.length + 1;
+      const clone = serieTemplate.content.cloneNode(true) as HTMLElement;
+      const numeroDiv = clone.querySelector('.serie-numero');
+      if (numeroDiv) numeroDiv.textContent = nuevoNumero.toString() + ".";
+      seriesList.appendChild(clone);
+    }
+
+    function agregarSubserie(btnDrop: HTMLElement) {
+      if (!serieTemplate || !seriesList) return;
+      const currentSerieItem = btnDrop.closest('.serie-item');
+      if (!currentSerieItem) return;
+
+      const clone = serieTemplate.content.cloneNode(true) as HTMLElement;
+      const subItem = clone.querySelector('.serie-item') as HTMLElement;
+      subItem.setAttribute('data-level', 'child');
+      subItem.classList.add('ml-10', 'scale-95', 'opacity-90');
+
+      const numeroDiv = clone.querySelector('.serie-numero');
+      if (numeroDiv) {
+          numeroDiv.textContent = "↳";
+          numeroDiv.classList.add('text-2xl');
+      }
+
+      const containerBtnDrop = clone.querySelector('.container-btn-drop');
+      if (containerBtnDrop) containerBtnDrop.remove();
+
+      let insertTarget = currentSerieItem;
+      let nextElem = currentSerieItem.nextElementSibling;
+      while (nextElem && nextElem.classList.contains('serie-item') && nextElem.getAttribute('data-level') === 'child') {
+          insertTarget = nextElem;
+          nextElem = nextElem.nextElementSibling;
+      }
+      insertTarget.after(subItem);
+    }
+
+    const seriesList = document.getElementById('series-list');
+    const serieTemplate = document.getElementById('serie-template') as HTMLTemplateElement;
+    const btnAgregar = document.getElementById('btn-agregar');
+
+    btnAgregar?.addEventListener('click', () => agregarNuevaSerie());
+
+    document.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement;
+        const btnDrop = target.closest('.btn-agregar-drop');
+        if (btnDrop) {
+            agregarSubserie(btnDrop as HTMLElement);
+        }
+    });
+
+    document.addEventListener('wheel', (event) => {
+        if (document.activeElement instanceof HTMLInputElement && document.activeElement.type === 'number') {
+            document.activeElement.blur();
+        }
+    });
+
+    document.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement;
+        const unitToggle = target.closest('.unit-toggle');
+        if (!unitToggle) return;
+
+        const serieContainer = unitToggle.closest('.grid-cols-3');
+        if (!serieContainer) return;
+
+        const unitText = serieContainer.querySelector('.unit-text');
+        const inputPeso = serieContainer.querySelector('.input-peso') as HTMLInputElement;
+        if (!unitText || !inputPeso) return;
+
+        const currentUnit = unitText.textContent?.trim().toUpperCase() || 'KG';
+        const currentValue = parseFloat(inputPeso.value);
+
+        if (currentUnit === 'KG') {
+            unitText.textContent = 'LB';
+            if (!isNaN(currentValue)) inputPeso.value = (currentValue * 2.20462).toFixed(1);
+        } else {
+            unitText.textContent = 'KG';
+            if (!isNaN(currentValue)) inputPeso.value = (currentValue / 2.20462).toFixed(1);
+        }
+    });
+
+    void cargarRegistro().catch((error) => {
+        console.error('Error al cargar el registro:', error);
+    });
+
+    // ---- 3D Viewer Functions ----
+    function initThreeViewer() {
+        const container = document.getElementById('canvas-container');
+        if (!container) return;
+
+        if (renderer) {
+            const width = container.clientWidth || 400;
+            const height = container.clientHeight || 400;
+            renderer.setSize(width, height);
+            if (camera) {
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
+            return;
+        }
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1d24);
+
+        const width = container.clientWidth || 400;
+        const height = container.clientHeight || 400;
+
+        camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+        const distance = 15;
+        const angle = Math.PI / 4;
+        camera.position.set(
+            Math.sin(angle) * distance,
+            20,
+            Math.cos(angle) * distance
+        );
+        camera.lookAt(0, 0, 0);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
+        scene.add(ambientLight);
+
+        const dirLight1 = new THREE.DirectionalLight(0xffffff, 2.5);
+        dirLight1.position.set(5, 10, 7);
+        scene.add(dirLight1);
+
+        const dirLight2 = new THREE.DirectionalLight(0xffffff, 1.5);
+        dirLight2.position.set(-5, -5, -5);
+        scene.add(dirLight2);
+
+        const loader = new GLTFLoader();
+        loader.load('/assets/simple.glb', (gltf) => {
+            model3D = gltf.scene;
+            scene.add(model3D);
+
+            const box = new THREE.Box3().setFromObject(model3D);
+            const center = box.getCenter(new THREE.Vector3());
+            model3D.position.sub(center);
+
+            model3D.traverse((child) => {
+                const nameLower = child.name.toLowerCase();
+                const esPermitido =
+                    nameLower !== "abspies" &&
+                    allowedVisibleParts.some(part => nameLower.includes(part));
+                if (esPermitido) {
+                    let current = child;
+                    while (current && current !== model3D) {
+                        current.visible = true;
+                        current = current.parent;
+                    }
+                }
+            });
+
+            if (gltf.animations && gltf.animations.length > 0) {
+                mixer = new THREE.AnimationMixer(model3D);
+                gltf.animations.forEach((clip) => {
+                    animationsMap.set(clip.name.toLowerCase(), clip);
+                });
+            }
+
+            document.getElementById('3d-loading')?.remove();
+
+            if (ejercicioPendiente3D) {
+                actualizarModelo3D(ejercicioPendiente3D);
+                ejercicioPendiente3D = null;
+            }
+        }, undefined, (error) => {
+            console.error('Error cargando modelo 3D:', error);
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            timer.update();
+            const delta = timer.getDelta();
+            if (mixer) mixer.update(delta);
+            if (renderer && scene && camera) renderer.render(scene, camera);
+        }
+        animate();
+    }
+
+    function actualizarModelo3D(routineDayExercise) {
+        if (!model3D) return;
+        // The data comes as a RoutineDayExercise; the actual Exercise fields
+        // (animacion, maquina, con_asiento, con_respaldo) are in .exercise
+        const exercise = routineDayExercise.exercise ?? routineDayExercise;
+        const maquinaName = String(exercise.maquina ?? "").toLowerCase().trim();
+
+        // Update the exercise name label in the viewer
+        const nombreLabel = document.getElementById('nombre-ejercicio-seleccionado');
+        if (nombreLabel) {
+            nombreLabel.textContent = exercise.name ?? 'Ejercicio';
+        }
+
+        function coincideEnJerarquia(obj, nombres) {
+            let actual = obj;
+            while (actual && actual !== model3D) {
+                const nombre = actual.name.toLowerCase();
+                if (nombre === "abspies") return false;
+                if (nombres.some(n => nombre.includes(n))) return true;
+                actual = actual.parent;
+            }
+            return false;
+        }
+
+        model3D.traverse(child => {
+            child.visible = child.name.toLowerCase() !== "abspies";
+        });
+
+        model3D.traverse(child => {
+            if (!child.isMesh) return;
+
+            const esCuerpo = coincideEnJerarquia(child, allowedVisibleParts);
+            const esMaquina = maquinaName && coincideEnJerarquia(child, [maquinaName]);
+            const esAsiento = exercise.con_asiento && coincideEnJerarquia(child, ["silla", "asiento"]);
+            const esRespaldo = exercise.con_respaldo && coincideEnJerarquia(child, ["respaldo"]);
+
+            child.visible = Boolean(esCuerpo || esMaquina || esAsiento || esRespaldo);
+
+            if (child.visible) {
+                let padre = child.parent;
+                while (padre && padre !== model3D) {
+                    if (padre.name.toLowerCase() === "abspies") break;
+                    padre.visible = true;
+                    padre = padre.parent;
+                }
+            }
+        });
+
+        if (mixer) {
+            mixer.stopAllAction();
+            if (exercise.animacion) {
+                const animClip = animationsMap.get(String(exercise.animacion).toLowerCase());
+                if (animClip) {
+                    mixer.clipAction(animClip).reset().play();
+                } else {
+                    console.warn('Animación no encontrada en el mapa:', exercise.animacion);
+                }
+            }
+        }
+    }
+
+</script>
+</ProtectedLayout>

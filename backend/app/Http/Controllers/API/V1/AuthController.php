@@ -44,7 +44,7 @@ class AuthController extends Controller
             } else {
                 if(Auth::attempt(['email' => $validated['email'], 'password' => $validated['password']])) {
                     return response()->json([
-                        'success' => $user->createToken($user->name)->plainTextToken,
+                        'success' => $this->issueAccessToken($user),
                         'user' => [
                             'id' => $user->id,
                             'name' => $user->name,
@@ -87,7 +87,7 @@ class AuthController extends Controller
             ]);
 
             return response()->json([
-                'success' => $user->createToken($user->name)->plainTextToken,
+                'success' => $this->issueAccessToken($user),
                 'user' => [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -135,6 +135,18 @@ class AuthController extends Controller
                 'error' => 'Error al obtener el usuario, intente de nuevo mas tarde'
             ], 400);
         }
+    }
+
+    /** Issue a token with a persisted expiry for auditability and revocation checks. */
+    private function issueAccessToken(User $user): string
+    {
+        $expirationMinutes = (int) config('sanctum.expiration', 60);
+
+        return $user->createToken(
+            $user->name,
+            ['*'],
+            now()->addMinutes($expirationMinutes)
+        )->plainTextToken;
     }
 
 }

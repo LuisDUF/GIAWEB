@@ -7,10 +7,97 @@ use App\Models\Profile;
 use App\Models\WorkoutSession;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class WorkoutSessionController extends Controller
 {
 
+
+public function saveCompleteSession(Request $request, ?string $id = null)
+{
+    // 1. Validación de los datos principales y anidados
+    $validated = $request->validate([
+        'routine_day_id' => ['nullable', 'exists:routine_days,id'],
+        'date' => ['required', 'date'],
+        'duration_minutes' => ['nullable', 'integer', 'min:0'],
+        'notes' => ['nullable', 'string'],
+
+        // Ejercicios de la sesión
+        'exercises' => ['required', 'array', 'min:1'],
+        'exercises.*.exercise_id' => ['required', 'exists:exercises,id'],
+        'exercises.*.order_index' => ['nullable', 'integer'],
+
+        // Series de cada ejercicio
+        'exercises.*.sets' => ['required', 'array', 'min:1'],
+        'exercises.*.sets.*.set_number' => ['required', 'integer', 'min:1'],
+        'exercises.*.sets.*.weight_kg' => ['required', 'numeric', 'min:0'],
+        'exercises.*.sets.*.reps' => ['required', 'integer', 'min:0'],
+        'exercises.*.sets.*.rpe' => ['nullable', 'numeric', 'min:1', 'max:10'],
+        'exercises.*.sets.*.set_type' => ['nullable', 'string'],
+        'exercises.*.sets.*.sub_order' => ['nullable', 'integer'],
+    ]);
+
+    $profile = $this->profileFor($request);
+
+    // 2. Transacción atómica
+    return DB::transaction(function () use ($validated, $profile, $id) {
+
+        if ($id) {
+            // --- ACTUALIZACIÓN ---
+            $session = $profile->workoutSessions()->findOrFail($id);
+
+            $session->update([
+                'routine_day_id' => $validated['routine_day_id'] ?? $session->routine_day_id,
+                'date' => $validated['date'],
+                'duration_minutes' => $validated['duration_minutes'] ?? $session->duration_minutes,
+                'notes' => $validated['notes'] ?? $session->notes,
+            ]);
+
+            // Estrategia limpia para actualización anidada:
+            // Eliminamos los ejercicios y series anteriores y recreamos los nuevos enviados.
+            // (Asegúrate de tener onDelete('cascade') en tus migraciones para session_exercises -> session_sets)
+            $session->sessionExercises()->delete();
+
+        } else {
+            // --- CREACIÓN ---
+            $session = $profile->workoutSessions()->create([
+                'routine_day_id' => $validated['routine_day_id'] ?? null,
+                'date' => $validated['date'],
+                'duration_minutes' => $validated['duration_minutes'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+            ]);
+        }
+
+        // 3. Inserción de Ejercicios y Series
+        foreach ($validated['exercises'] as $exerciseData) {
+            $sessionExercise = $session->sessionExercises()->create([
+                'exercise_id' => $exerciseData['exercise_id'],
+                'order_index' => $exerciseData['order_index'] ?? 0,
+            ]);
+
+            foreach ($exerciseData['sets'] as $setData) {
+                $sessionExercise->sessionSets()->create([
+                    'set_number' => $setData['set_number'],
+                    'weight_kg' => $setData['weight_kg'],
+                    'reps' => $setData['reps'],
+                    'rpe' => $setData['rpe'] ?? null,
+                    'set_type' => $setData['set_type'] ?? 'normal',
+                    'sub_order' => $setData['sub_order'] ?? 0,
+                ]);
+            }
+        }
+
+        // 4. Retornar la sesión cargada con todas sus relaciones
+        return response()->json([
+            'message' => $id ? 'Sesión actualizada correctamente.' : 'Sesión registrada correctamente.',
+            'data' => $session->load([
+                'routineDay.routine',
+                'sessionExercises.exercise',
+                'sessionExercises.sessionSets'
+            ])
+        ], $id ? 200 : 201);
+    });
+}
 
 
 
@@ -88,14 +175,23 @@ public function streak(Request $request)
 }
 
 public function index(Request $request)
-    {
-        $sessions = $this->profileFor($request)
-            ->workoutSessions()
-            ->latest('date')
-            ->paginate(10);
+{
+    $validated = $request->validate([
+        'date' => ['nullable', 'date'],
+    ]);
 
-        return response()->json($sessions);
-    }
+    $sessions = $this->profileFor($request)
+        ->workoutSessions()
+        ->with(['routineDay.routine']) // <-- Añadimos esto para cargar la relación anidada
+        ->when(
+            $validated['date'] ?? null,
+            fn ($query, $date) => $query->whereDate('date', $date)
+        )
+        ->latest('date')
+        ->paginate(12);
+
+    return response()->json($sessions);
+}
 
     public function store(Request $request)
     {
@@ -117,8 +213,15 @@ public function index(Request $request)
     public function show(Request $request, string $id)
     {
         $session = $this->profileFor($request)
-            ->workoutSessions()
-            ->findOrFail($id);
+    ->workoutSessions()
+    ->with([
+        'routineDay.routine',
+        'routineDay.routineDayExercises' => fn ($query) => $query->orderBy('order_index'),
+        'routineDay.routineDayExercises.exercise',
+        'sessionExercises.exercise',
+        'sessionExercises.sessionSets',
+    ])
+    ->findOrFail($id);
 
         return response()->json($session);
     }
@@ -200,5 +303,43 @@ public function stats(Request $request)
     }
 
     return response()->json($conteo);
+}
+
+
+/**
+     * Obtener la información de la rutina y sus días asociados a partir de una sesión de entrenamiento.
+     */
+public function routine(Request $request, string $id)
+{
+    $session = $this->profileFor($request)
+        ->workoutSessions()
+        ->with(['routineDay.routine'])
+        ->findOrFail($id);
+
+    // Si no tiene rutina, devolvemos null con código 200 en lugar de abortar con 404
+    if (!$session->routineDay || !$session->routineDay->routine) {
+        return response()->json(null, 200);
+    }
+
+    return response()->json($session->routineDay->routine);
+}
+
+public function routine_day(Request $request, string $id)
+{
+    $session = $this->profileFor($request)
+        ->workoutSessions()
+        ->with(['routineDay.routine'])
+        ->findOrFail($id);
+
+    // Si no tiene día de rutina asociado, retornamos null
+    if (!$session->routineDay) {
+        return response()->json(null, 200);
+    }
+
+    // Retornamos un array estructurado con ambos datos
+    return response()->json([
+        'routine_day' => $session->routineDay,
+        'routine'     => $session->routineDay->routine,
+    ], 200);
 }
 }

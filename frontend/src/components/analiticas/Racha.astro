@@ -37,7 +37,8 @@ const { titulo, mensaje, subtitulo } = Astro.props;
         // Redirigir al login o mostrar mensaje
         return;
         }
-      const response = await fetch('http://127.0.0.1:8000/api/v1/workout-sessions/streak', {
+      const apiUrl = (import.meta.env.PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+      const response = await fetch(`${apiUrl}/v1/workout-sessions/streak`, {
         method: 'GET',
         headers: {
             Accept: 'application/json',

@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 
-const { titulo, mensaje, subtitulo } = Astro.props;
+const { titulo, class: className = '', subtitulo, classContenido: classContenido = '', classTitulo: classTitulo = '' } = Astro.props;
 
 ---
 
@@ -19,7 +19,7 @@ const { titulo, mensaje, subtitulo } = Astro.props;
 </head>
 <body>
 
-    <div id="interactive-area" class="relative w-full h-screen ">
+    <div id="interactive-area" class={`relative w-full md:h-full h-[130%] card-base ${className}`}>
 
         <div class="absolute z-9 w-full flex justify-center items-center md:mt-[22rem] mt-[23rem]">
             <div id="create-account-card" class="duration-500 transition-all ease-in-out opacity-100 translate-y-0 tilt-element hover:cursor-pointer bg-blue md:rounded-3xl rounded p-16 pb-3 px-10 md:min-w-[25rem] max-w-[25rem] flex flex-col gap-4 shadow-md justify-center items-center md:mt-[8rem] mt-[5rem]">
@@ -29,8 +29,8 @@ const { titulo, mensaje, subtitulo } = Astro.props;
             </div>
         </div>
 
-        <div class="absolute z-0 w-full flex justify-center items-center  overflow-hidden md:h-28 h-20">
-            <div id="que-es-card" class="duration-500 transition-all ease-in-out opacity-100 translate-y-0 tilt-element cursor-pointer bg-blue md:rounded-3xl rounded p-16 md:pt-3 pt-1 px-10 md:min-w-[25rem] max-w-[11rem] flex flex-col gap-4 shadow-md justify-center items-center md:mt-[7.8rem] mt-[5rem]">
+        <div class={`absolute z-0 w-full flex justify-center items-center  overflow-hidden md:h-28 h-20 `}>
+            <div id="que-es-card" class={`duration-500 transition-all ease-in-out opacity-100 translate-y-0 tilt-element cursor-pointer bg-blue md:rounded-3xl rounded p-16 md:pt-3 pt-1 px-10  flex flex-col gap-4 shadow-md justify-center items-center md:mt-[7.8rem] mt-[5rem] ${classTitulo}`}>
                 <h1 class="poetsen-one-regular text-white font-bold text-center select-none pointer-events-none md:text-3xl text-md ">
                     {titulo}
                 </h1>
@@ -39,7 +39,7 @@ const { titulo, mensaje, subtitulo } = Astro.props;
 
         
  <!-- PADRE -->
-<div class="relative z-10 md:min-w-[30rem] max-w-[20rem] mx-auto md:mt-[7rem] mt-[5rem] h-[27rem] shadow-xl md:rounded-3xl rounded bg-secondary md:p-6 p-0 py-4 flex flex-col justify-center">
+<div class={`relative z-10 mx-auto md:mt-[7rem] mt-[5rem] h-[27rem] shadow-xl md:rounded-3xl rounded bg-secondary md:p-6 p-0 py-4 flex flex-col  ${classContenido}`}>
     <slot />
 </div>
 

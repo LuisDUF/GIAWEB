@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Routine extends Model
 {
     public $table = 'routines';
+    public $timestamps = false;
 
     public $fillable = [
         'user_id',

@@ -1,0 +1,24 @@
+# Reglas efímeras para demostrar activación y resolución del circuito de alertas.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: fitness-alert-validation
+  namespace: observability
+  labels:
+    app.kubernetes.io/part-of: fitness-observability
+spec:
+  groups:
+    - name: fitness.alert-validation
+      rules:
+        - alert: FitnessAlertPipelineValidationOne
+          expr: vector(0) > 0
+          for: 0m
+          labels: { severity: info, test: "true" }
+          annotations:
+            summary: "Prueba controlada uno del circuito de alertas"
+        - alert: FitnessAlertPipelineValidationTwo
+          expr: vector(0) > 0
+          for: 0m
+          labels: { severity: info, test: "true" }
+          annotations:
+            summary: "Prueba controlada dos del circuito de alertas"

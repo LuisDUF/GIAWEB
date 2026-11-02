@@ -46,7 +46,9 @@ return [
     |
     */
 
-    'expiration' => null,
+    // Personal access tokens expire after this many minutes. Keep this value in
+    // the environment so each Kubernetes environment can set an explicit policy.
+    'expiration' => (int) env('SANCTUM_EXPIRATION', 60),
 
     /*
     |--------------------------------------------------------------------------

@@ -208,7 +208,15 @@ import '../styles/global.css';
             }
 
             sessionStorage.setItem('auth_token', data.success);
-            if (endpoint === 'login' && data.user?.is_admin === false) {
+            if (endpoint === 'login') {
+                if (data.user?.is_admin) {
+                    window.location.replace('/admin');
+                } else {
+                    window.location.replace('/dashboard');
+                }
+                return;
+            }
+            if (endpoint === 'register') {
                 window.location.replace('/dashboard');
                 return;
             }

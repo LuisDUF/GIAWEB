@@ -1,0 +1,54 @@
+# Alloy descubre logs de Pods mediante la API Kubernetes y los escribe en Loki.
+controller:
+  type: daemonset
+
+alloy:
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { cpu: 200m, memory: 256Mi }
+  configMap:
+    content: |
+      discovery.kubernetes "pods" {
+        role = "pod"
+      }
+
+      discovery.relabel "fitness_logs" {
+        targets = discovery.kubernetes.pods.targets
+
+        rule {
+          action        = "keep"
+          source_labels = ["__meta_kubernetes_namespace"]
+          regex         = "fitness-prod|observability"
+        }
+        rule {
+          action        = "replace"
+          source_labels = ["__meta_kubernetes_namespace"]
+          target_label  = "namespace"
+        }
+        rule {
+          action        = "replace"
+          source_labels = ["__meta_kubernetes_pod_name"]
+          target_label  = "pod"
+        }
+        rule {
+          action        = "replace"
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          target_label  = "container"
+        }
+        rule {
+          action        = "replace"
+          source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+          target_label  = "app"
+        }
+      }
+
+      loki.source.kubernetes "fitness_logs" {
+        targets    = discovery.relabel.fitness_logs.output
+        forward_to = [loki.write.default.receiver]
+      }
+
+      loki.write "default" {
+        endpoint {
+          url = "http://loki.observability.svc.cluster.local:3100/loki/api/v1/push"
+        }
+      }

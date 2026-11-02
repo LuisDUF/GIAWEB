@@ -9,10 +9,12 @@ import BaseLayout from './BaseLayout.astro';
 </BaseLayout>
 
 <script>
+(async () => {
     const protectedContent = document.getElementById('protected-content');
     const authStatus = document.getElementById('auth-status');
     const token = sessionStorage.getItem('auth_token');
     const apiUrl = (import.meta.env.PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+    const isAdminPage = window.location.pathname.startsWith('/admin');
 
     if (!token) {
         window.location.replace('/');
@@ -31,6 +33,15 @@ import BaseLayout from './BaseLayout.astro';
             } else if (!response.ok) {
                 throw new Error(`No se pudo comprobar la sesión (HTTP ${response.status}).`);
             } else {
+                const data = await response.json();
+                const user = data.success;
+
+                // Si la ruta es /admin, verificar que sea administrador
+                if (isAdminPage && !user?.is_admin) {
+                    window.location.replace('/dashboard');
+                    return;
+                }
+
                 protectedContent.hidden = false;
                 authStatus.hidden = true;
             }
@@ -40,4 +51,5 @@ import BaseLayout from './BaseLayout.astro';
                 : 'No se pudo comprobar la sesión. Intenta de nuevo.';
         }
     }
+})();
 </script>

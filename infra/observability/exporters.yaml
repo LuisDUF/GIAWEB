@@ -1,0 +1,133 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-exporter
+  namespace: fitness-prod
+  labels:
+    app.kubernetes.io/name: mysql-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mysql-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mysql-exporter
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: exporter
+          image: prom/mysqld-exporter:v0.17.2
+          args: ["--config.my-cnf=/etc/mysql-exporter/.my.cnf"]
+          ports:
+            - name: metrics
+              containerPort: 9104
+          resources:
+            requests: { cpu: 25m, memory: 64Mi }
+            limits: { cpu: 100m, memory: 128Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile: { type: RuntimeDefault }
+          volumeMounts:
+            - name: credentials
+              mountPath: /etc/mysql-exporter
+              readOnly: true
+      volumes:
+        - name: credentials
+          secret:
+            secretName: mysql-exporter-credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-exporter
+  namespace: fitness-prod
+  labels:
+    app.kubernetes.io/name: mysql-exporter
+spec:
+  selector:
+    app.kubernetes.io/name: mysql-exporter
+  ports:
+    - name: metrics
+      port: 9104
+      targetPort: metrics
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-exporter
+  namespace: fitness-prod
+  labels:
+    app.kubernetes.io/name: mongodb-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mongodb-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mongodb-exporter
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: exporter
+          image: percona/mongodb_exporter:0.43.1
+          args: ["--collect-all"]
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-exporter-credentials
+                  key: mongodb-uri
+          ports:
+            - name: metrics
+              containerPort: 9216
+          resources:
+            requests: { cpu: 25m, memory: 64Mi }
+            limits: { cpu: 100m, memory: 128Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile: { type: RuntimeDefault }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-exporter
+  namespace: fitness-prod
+  labels:
+    app.kubernetes.io/name: mongodb-exporter
+spec:
+  selector:
+    app.kubernetes.io/name: mongodb-exporter
+  ports:
+    - name: metrics
+      port: 9216
+      targetPort: metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: fitness-database-exporters
+  namespace: observability
+spec:
+  namespaceSelector:
+    matchNames: [fitness-prod]
+  selector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values: [mysql-exporter, mongodb-exporter]
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics

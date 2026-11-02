@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class WorkoutSession extends Model
 {
     public $table = 'workout_sessions';
-
+public $timestamps = false;
     public $fillable = [
         'user_id',
         'routine_day_id',

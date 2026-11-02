@@ -8,6 +8,8 @@ class RoutineDay extends Model
 {
     public $table = 'routine_days';
 
+       public $timestamps = false;
+
     public $fillable = [
         'routine_id',
         'name',
